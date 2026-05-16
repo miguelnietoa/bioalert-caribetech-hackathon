@@ -174,9 +174,7 @@ resources:
           AttributeName: expires_at
           Enabled: true
 
-    # ───────────────────────────────────────────────
     # S3 — vistas web estáticas (nutrition-report, cafeteria-insights)
-    # ───────────────────────────────────────────────
     WebBucket:
       Type: AWS::S3::Bucket
       DeletionPolicy: Delete
@@ -192,6 +190,7 @@ resources:
           RestrictPublicBuckets: false
         WebsiteConfiguration:
           IndexDocument: index.html
+          ErrorDocument: index.html
 
     WebBucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -202,8 +201,11 @@ resources:
             - Sid: PublicReadGetObject
               Effect: Allow
               Principal: '*'
-              Action: 's3:GetObject'
-              Resource: !Sub '${WebBucket.Arn}/*'
+              Action: s3:GetObject
+              Resource: !Join
+                - ''
+                - - !GetAtt WebBucket.Arn
+                  - '/*'
 
   Outputs:
     DBEndpoint:
@@ -215,8 +217,10 @@ resources:
       Value: !GetAtt DBSecurityGroup.GroupId
     ConversationsTableName:
       Value: !Ref ConversationsTable
-    WebBucketUrl:
-      Description: 'S3 website URL para las vistas web'
+    WebBucketName:
+      Value: !Ref WebBucket
+    WebBucketWebsiteUrl:
+      Description: 'S3 static site base URL (append path, e.g. nutrition-report/)'
       Value: !GetAtt WebBucket.WebsiteURL
       Export:
         Name: bioalert-${self:provider.stage}-web-url
