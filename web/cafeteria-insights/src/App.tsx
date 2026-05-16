@@ -99,22 +99,23 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-biofood-bg">
+    <div className="flex h-full overflow-hidden bg-biofood-bg">
       <Sidebar
         collapsed={sidebarCollapsed}
         schoolName={payload.schoolName}
         onToggle={() => setSidebarCollapsed((c) => !c)}
       />
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-auto">
-        <header className="border-b border-slate-200 bg-white px-6 py-5">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="shrink-0 border-b border-slate-200 bg-white px-6 py-5">
           <h1 className="text-2xl font-bold text-slate-800">Ordenes</h1>
           <p className="mt-1 text-sm text-slate-500">
             Operación diaria + recomendaciones predictivas BioAlert+
           </p>
         </header>
 
-        <div className="space-y-5 p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="space-y-5 p-6">
           <DataSourceBadge
             source={source}
             error={fetchError}
@@ -158,6 +159,7 @@ export default function App() {
           </label>
 
           <OrdersTable orders={filteredOrders} searchTerm={tableSearch} />
+          </div>
         </div>
       </main>
     </div>

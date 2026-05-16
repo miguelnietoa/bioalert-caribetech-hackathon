@@ -27,8 +27,8 @@ type Props = {
 
 export function Sidebar({ collapsed, schoolName, onToggle }: Props) {
   return (
-    <aside className="flex h-screen shrink-0">
-      <div className="flex w-12 flex-col items-center gap-6 bg-biofood-sidebar py-4 text-white">
+    <aside className="flex h-full shrink-0 overflow-hidden">
+      <div className="flex h-full w-12 shrink-0 flex-col items-center gap-6 bg-biofood-sidebar py-4 text-white">
         <Fingerprint className="h-5 w-5 opacity-90" />
         <Home className="h-5 w-5 opacity-70 hover:opacity-100" />
         <Mail className="h-5 w-5 opacity-70 hover:opacity-100" />
@@ -37,11 +37,11 @@ export function Sidebar({ collapsed, schoolName, onToggle }: Props) {
       </div>
 
       <div
-        className={`flex flex-col border-r border-slate-200 bg-white transition-all ${
+        className={`flex h-full min-h-0 flex-col overflow-hidden border-r border-slate-200 bg-white transition-all ${
           collapsed ? "w-16" : "w-56"
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-5">
+        <div className="shrink-0 flex items-center gap-3 border-b border-slate-100 px-4 py-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-biofood-primary to-biofood-accent text-xs font-bold text-white">
             BF
           </div>
@@ -58,7 +58,7 @@ export function Sidebar({ collapsed, schoolName, onToggle }: Props) {
           </p>
         )}
 
-        <nav className="flex-1 space-y-0.5 px-2 py-2">
+        <nav className="min-h-0 flex-1 space-y-0.5 overflow-hidden px-2 py-2">
           {menuItems.map((item) => (
             <button
               key={item.label}
@@ -77,7 +77,7 @@ export function Sidebar({ collapsed, schoolName, onToggle }: Props) {
           ))}
         </nav>
 
-        <div className="flex items-center justify-between border-t border-slate-100 p-3">
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 p-3">
           <Users className="h-5 w-5 text-slate-400" />
           <button
             type="button"
