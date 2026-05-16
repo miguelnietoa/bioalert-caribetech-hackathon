@@ -1,0 +1,67 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnp.*
+.npm/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# AWS
+.aws-sam/
+.serverless/
+samconfig.toml
+cdk.out/
+.cdk.staging/
+.aws/
+
+# Python (analysis notebooks)
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.venv/
+venv/
+.python-version
+
+# Tests / coverage
+coverage/
+.nyc_output/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Data large / generated
+data/nutrition-source/*.csv
+data/nutrition-source/*.json
+!data/nutrition-source/README.md
+data/*.csv
+!data/nutrition-mapped.csv
+
+# Local-only fixture exports
+*.dump
+*.sql.bak
