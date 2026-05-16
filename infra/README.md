@@ -1,6 +1,8 @@
 # infra/
 
-Infraestructura como código con **Serverless Framework v4** (`serverless.yml`).
+> **El `serverless.yml` vive en la raíz** (convención de Serverless Framework). Este folder queda como home de documentación de infra solamente.
+
+Infraestructura como código con **Serverless Framework v4** (`../serverless.yml`).
 
 Recursos definidos en el `serverless.yml` (un solo stack, sin microservicios):
 
