@@ -9,6 +9,7 @@ Agente de WhatsApp para padres y administradores de cafeterías escolares de Bio
 - [`CLAUDE.md`](./CLAUDE.md) — memoria persistente del proyecto. **Leer primero.**
 - [`biofood-hackathon-plan.md`](./biofood-hackathon-plan.md) — plan completo de 24h.
 - [`docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf`](./docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf) — PRD oficial.
+- [`docs/aws-onboarding.md`](./docs/aws-onboarding.md) — setup de AWS CLI compartido (Arcila / Maza arrancan acá).
 
 ## Estructura
 
