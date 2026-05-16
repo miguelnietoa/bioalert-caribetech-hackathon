@@ -4,207 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reporte Nutricional Semanal · BioAlert+</title>
-  <meta name="description" content="Reporte nutricional semanal personalizado para tu hijo en BioAlert+">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 1rem;
-      background: #f5f5f7;
-      color: #1d1d1f;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: .75rem;
-      border-bottom: 1px solid #e5e5ea;
-    }
-    header .logo { font-size: 1.75rem; }
-    header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
-    header p  { font-size: .8rem; color: #636366; margin-top: 2px; }
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1rem 1.25rem;
-      margin-bottom: .875rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-    }
-    .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
-    .card h3 { font-size: .875rem; font-weight: 600; color: #636366; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .75rem; }
-    .student-name { font-size: 1.25rem; font-weight: 700; }
-    .student-meta { font-size: .85rem; color: #636366; margin-top: .2rem; }
-    .macros-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: .625rem;
-      margin-bottom: .875rem;
-    }
-    .macro-pill {
-      background: #f5f5f7;
-      border-radius: 10px;
-      padding: .625rem .75rem;
-      text-align: center;
-    }
-    .macro-pill .value { font-size: 1.2rem; font-weight: 700; }
-    .macro-pill .label { font-size: .72rem; color: #636366; margin-top: 2px; }
-    .macro-pill.warn  .value { color: #ff3b30; }
-    .macro-pill.ok    .value { color: #34c759; }
-    canvas { max-height: 220px; }
-    .top-product { display: flex; justify-content: space-between; align-items: center; padding: .5rem 0; border-bottom: 1px solid #f0f0f0; }
-    .top-product:last-child { border-bottom: none; }
-    .top-product .name { font-size: .875rem; }
-    .top-product .count { font-size: .85rem; font-weight: 600; color: #636366; }
-    .narrative {
-      font-size: .9rem;
-      line-height: 1.6;
-      background: #fff9ec;
-      border-left: 3px solid #ff9f0a;
-      border-radius: 0 10px 10px 0;
-      padding: .875rem 1rem;
-    }
-    .flag {
-      font-size: .875rem;
-      background: #fff2f2;
-      border-left: 3px solid #ff3b30;
-      border-radius: 0 10px 10px 0;
-      padding: .75rem 1rem;
-      margin-top: .5rem;
-    }
-    .loading { text-align: center; padding: 3rem; color: #636366; font-size: .95rem; }
-    .error   { text-align: center; padding: 3rem; color: #ff3b30; font-size: .95rem; }
-    footer { text-align: center; font-size: .75rem; color: #aeaeb2; margin-top: 1.5rem; padding-bottom: 1.5rem; }
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 1rem; background: #f0f4f8; color: #1a202c; }
+    h1 { font-size: 1.4rem; }
+    .card { background: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .flag-red { color: #c53030; font-weight: 600; }
+    canvas { max-height: 240px; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">🍎</div>
-    <div>
-      <h1>BioAlert+</h1>
-      <p>Reporte Nutricional Semanal</p>
-    </div>
-  </header>
-
-  <div id="root"><div class="loading">Cargando reporte…</div></div>
-
-  <footer>BioAlert+ · Caribe Tech Arena 2026 · Datos estimados con fines de orientación</footer>
-
+  <h1>Reporte nutricional semanal</h1>
+  <div id="root">Cargando...</div>
   <script>
     const params = new URLSearchParams(location.search)
-    const parentId = params.get('parent')
-    if (!parentId) {
-      document.getElementById('root').innerHTML = '<div class="error">Parámetro <code>parent</code> no encontrado en la URL.</div>'
-    } else {
-      const bucketBase = window.location.origin
-      fetch(`${bucketBase}/data/${parentId}.json`)
-        .then(r => { if (!r.ok) throw new Error(r.status); return r.json() })
-        .then(render)
-        .catch(() => {
-          document.getElementById('root').innerHTML = '<div class="error">No se encontró el reporte. Puede que aún no se haya generado esta semana.</div>'
-        })
-    }
+    const studentId = params.get('student') || '0010204385'
+    fetch(`./data/${studentId}.json`)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json() })
+      .then(render)
+      .catch(() => {
+        document.getElementById('root').innerHTML =
+          '<div class="card">Sin datos aún. La Lambda <code>nutrition-weekly</code> sube <code>data/' + studentId + '.json</code> aquí.</div>'
+      })
 
     function render(d) {
-      const s = d.student
-      const p = d.peer
-      const flags = []
-
-      if (s.pct_snack > 35) flags.push(`⚠️ El ${Math.round(s.pct_snack)}% del consumo esta semana fue en dulces o snacks.`)
-      if (s.total_sugar > (p.avg_sugar * 1.5)) flags.push(`⚠️ El consumo de azúcar es ${Math.round((s.total_sugar / p.avg_sugar - 1) * 100)}% mayor al promedio del colegio.`)
-      if (s.total_sodium > 3000) flags.push(`⚠️ Consumo de sodio elevado esta semana (${s.total_sodium} mg).`)
-
-      const topProducts = Array.isArray(s.top_products) ? s.top_products : []
-
-      document.getElementById('root').innerHTML = `
-        <div class="card">
-          <div class="student-name">${d.parent?.nombre_padre ?? 'Padre/Madre'}</div>
-          <div class="student-meta">📅 Semana del ${weekLabel(d.generated_at)} · 🏫 Colegio NIT 900000680</div>
-        </div>
-
-        <div class="card">
-          <h3>Macros esta semana</h3>
-          <div class="macros-grid">
-            <div class="macro-pill ${s.total_calories > p.avg_calories * 1.3 ? 'warn' : 'ok'}">
-              <div class="value">${fmt(s.total_calories)}</div>
-              <div class="label">Calorías</div>
-            </div>
-            <div class="macro-pill ${s.total_sugar > p.avg_sugar * 1.3 ? 'warn' : 'ok'}">
-              <div class="value">${fmt(s.total_sugar)}g</div>
-              <div class="label">Azúcar</div>
-            </div>
-            <div class="macro-pill">
-              <div class="value">${fmt(s.total_fat)}g</div>
-              <div class="label">Grasa</div>
-            </div>
-            <div class="macro-pill ${s.total_sodium > 3000 ? 'warn' : 'ok'}">
-              <div class="value">${fmt(s.total_sodium)}mg</div>
-              <div class="label">Sodio</div>
-            </div>
-          </div>
-          <canvas id="macros-chart"></canvas>
-        </div>
-
-        ${topProducts.length ? `
-        <div class="card">
-          <h3>Top productos</h3>
-          ${topProducts.map(p => `
-            <div class="top-product">
-              <span class="name">${p.nombre_producto}</span>
-              <span class="count">${p.veces}x</span>
-            </div>
-          `).join('')}
-        </div>` : ''}
-
-        ${d.narrative ? `
-        <div class="card">
-          <h3>Análisis IA</h3>
-          <div class="narrative">${d.narrative.replace(/\n/g, '<br>')}</div>
-        </div>` : ''}
-
-        ${flags.length ? `
-        <div class="card">
-          <h3>Alertas</h3>
-          ${flags.map(f => `<div class="flag">${f}</div>`).join('')}
-        </div>` : ''}
+      const root = document.getElementById('root')
+      root.innerHTML = `
+        <div class="card"><h2>${d.student_name}</h2><p>${d.school} · semana ${d.week}</p></div>
+        <div class="card"><h3>Top productos</h3><ul>${(d.top_products || []).map(p => `<li>${p.name} — ${p.count}x</li>`).join('')}</ul></div>
+        <div class="card"><h3>Macros vs. promedio del colegio</h3><canvas id="macros"></canvas></div>
+        ${(d.flags || []).length ? `<div class="card flag-red">⚠️ ${d.flags.join('. ')}</div>` : ''}
       `
-
-      new Chart(document.getElementById('macros-chart'), {
-        type: 'bar',
-        data: {
-          labels: ['Calorías', 'Azúcar (g)', 'Grasa (g)', 'Sodio (mg)'],
-          datasets: [
-            {
-              label: 'Tu hijo',
-              data: [s.total_calories, s.total_sugar, s.total_fat, s.total_sodium],
-              backgroundColor: 'rgba(52, 199, 89, 0.85)',
-              borderRadius: 6,
-            },
-            {
-              label: 'Promedio del colegio',
-              data: [p.avg_calories, p.avg_sugar, p.avg_fat, p.avg_sodium],
-              backgroundColor: 'rgba(174, 174, 178, 0.6)',
-              borderRadius: 6,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } },
-          scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } } },
-        },
-      })
-    }
-
-    function fmt(n) { return n != null ? Math.round(n).toLocaleString('es-CO') : '—' }
-    function weekLabel(iso) {
-      if (!iso) return ''
-      const d = new Date(iso)
-      const start = new Date(d); start.setDate(d.getDate() - 7)
-      return `${start.getDate()}/${start.getMonth()+1} al ${d.getDate()}/${d.getMonth()+1}`
+      if (d.student_macros && d.school_avg_macros) {
+        new Chart(document.getElementById('macros'), {
+          type: 'bar',
+          data: {
+            labels: ['Calorías', 'Azúcar (g)', 'Grasa (g)', 'Sodio (mg)'],
+            datasets: [
+              { label: d.student_name, data: d.student_macros, backgroundColor: '#2b6cb0' },
+              { label: 'Promedio colegio', data: d.school_avg_macros, backgroundColor: '#a0aec0' },
+            ],
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+        })
+      }
     }
   </script>
 </body>
