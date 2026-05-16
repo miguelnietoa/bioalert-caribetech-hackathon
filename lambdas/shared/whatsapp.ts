@@ -1,0 +1,72 @@
+import crypto from 'node:crypto'
+import { getSecret } from './ssm.js'
+import type { WhatsAppButton } from './types.js'
+
+const KAPSO_BASE = 'https://api.kapso.ai/platform/v1'
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const apiKey = await getSecret('kapso/api-key')
+  return {
+    'X-API-Key': apiKey,
+    'Content-Type': 'application/json',
+  }
+}
+
+export async function sendText(to: string, body: string): Promise<void> {
+  const headers = await authHeaders()
+  const res = await fetch(`${KAPSO_BASE}/whatsapp/messages`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ to, type: 'text', text: { body } }),
+  })
+  if (!res.ok) {
+    throw new Error(`Kapso sendText failed: ${res.status} ${await res.text()}`)
+  }
+}
+
+export async function sendButtons(
+  to: string,
+  body: string,
+  buttons: WhatsAppButton[],
+): Promise<void> {
+  const headers = await authHeaders()
+  const res = await fetch(`${KAPSO_BASE}/whatsapp/messages`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      to,
+      type: 'interactive',
+      interactive: {
+        type: 'button',
+        body: { text: body },
+        action: {
+          buttons: buttons.slice(0, 3).map((b) => ({
+            type: 'reply',
+            reply: { id: b.id, title: b.title.slice(0, 20) },
+          })),
+        },
+      },
+    }),
+  })
+  if (!res.ok) {
+    throw new Error(
+      `Kapso sendButtons failed: ${res.status} ${await res.text()}`,
+    )
+  }
+}
+
+export async function verifyWebhookSignature(
+  rawBody: string,
+  signatureHeader: string | undefined,
+): Promise<boolean> {
+  if (!signatureHeader) return false
+  const secret = await getSecret('kapso/webhook-secret')
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex')
+  const sigBuf = Buffer.from(signatureHeader)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length) return false
+  return crypto.timingSafeEqual(sigBuf, expBuf)
+}

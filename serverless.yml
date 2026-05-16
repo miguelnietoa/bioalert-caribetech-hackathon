@@ -52,7 +52,7 @@ resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupName: bioalert-rds-${self:provider.stage}
-        GroupDescription: 'bioalert RDS public access (hackathon only — scope down post-event)'
+        GroupDescription: 'bioalert RDS public access (hackathon only - scope down post-event)'
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 5432

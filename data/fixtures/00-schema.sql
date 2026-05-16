@@ -111,14 +111,4 @@ CREATE TABLE IF NOT EXISTS bioalert.product_nutrition (
 CREATE INDEX IF NOT EXISTS product_nutrition_canonical ON bioalert.product_nutrition (canonical_name);
 CREATE INDEX IF NOT EXISTS product_nutrition_category  ON bioalert.product_nutrition (category);
 
--- ============================================================
--- Verificación rápida
--- ============================================================
-\echo '=== Schemas creados ==='
-SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('reto', 'bioalert') ORDER BY 1;
-
-\echo '=== Tablas en reto ==='
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'reto' ORDER BY 1;
-
-\echo '=== Tablas en bioalert ==='
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'bioalert' ORDER BY 1;
+-- Verificación rápida (con psql: SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('reto', 'bioalert');)
