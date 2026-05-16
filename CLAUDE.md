@@ -189,7 +189,7 @@ Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear 
 > Actualizar al cierre de cada fase. Estados: `not started` / `in progress` / `done` / `blocked`.
 
 ### Infra
-- AWS account (Free Tier, sandbox personal Miguel): **not started**
+- AWS account: **done** — account `642722971137`, región `us-east-1`, profile local `biofood-hackathon` (IAM user con `AdministratorAccess`). Verificable con `aws sts get-caller-identity --profile biofood-hackathon`.
 - Serverless Framework v4 setup + serverless.yml base: **not started**
 - RDS Proxy + conexión a Biofood Global DB: **not started** (acceso confirmado por equipo)
 - DynamoDB `conversations`: **not started**
