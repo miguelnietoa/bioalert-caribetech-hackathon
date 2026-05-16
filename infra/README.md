@@ -1,15 +1,27 @@
 # infra/
 
-Plantillas de infraestructura como código (CloudFormation o CDK — decisión pendiente).
+Infraestructura como código con **Serverless Framework v4** (`serverless.yml`).
 
-Recursos esperados:
+Recursos definidos en el `serverless.yml` (un solo stack, sin microservicios):
 
-- `lambdas.yaml` — definiciones de cada Lambda con su rol IAM, env vars, layers
-- `api-gateway.yaml` — HTTP API con el webhook de WhatsApp
-- `eventbridge.yaml` — crons: 12PM ausencia (US-02), 7AM stock (US-05), dom 6PM nutrición (EXT-2), lun 7AM cafetería (EXT-3)
-- `dynamodb.yaml` — tabla `conversations` con TTL 1h
-- `rds-proxy.yaml` — proxy contra la Biofood Global DB
-- `s3-cloudfront.yaml` — bucket + distribución para `web/`
-- `ssm.yaml` — parámetros (Claude API key, WhatsApp tokens, DB creds)
+- **functions:** cada Lambda de `lambdas/` con su rol IAM, env vars, layers, triggers
+- **events:**
+  - HTTP API (webhook entrante de Kapso) → `conversation-handler`
+  - EventBridge schedules: 12PM (US-02), 7AM (US-05), domingos 6PM (EXT-2), lunes 7AM (EXT-3), cada 60s (US-03 polling)
+- **resources** (CloudFormation puro embebido):
+  - DynamoDB `conversations` con TTL 1h
+  - S3 bucket + CloudFront distribution para `web/`
+  - RDS Proxy contra la Biofood Global DB (o conexión directa si Proxy se vuelve fricción)
+  - SSM Parameters (Claude API key, Kapso API key + webhook secret, DB creds — con plan de agregar Twilio creds si entra el fallback)
 
-Nada de microservicios. Una sola stack si es viable.
+Empaquetado: esbuild built-in de Serverless v4 (`build.esbuild: true`) para compilar TS → ESM bundle por Lambda.
+
+Comandos:
+
+```
+npx serverless deploy --stage hackathon
+npx serverless deploy function -f conversation-handler --stage hackathon
+npx serverless logs -f conversation-handler --tail --stage hackathon
+```
+
+Licencia: Serverless Framework v4 es gratis para hackathon. Si Biofood adopta post-evento y tiene >$2M USD ingresos, requiere licencia paga.
