@@ -172,6 +172,37 @@ resources:
           AttributeName: expires_at
           Enabled: true
 
+    # ───────────────────────────────────────────────
+    # S3 — vistas web estáticas (nutrition-report, cafeteria-insights)
+    # ───────────────────────────────────────────────
+    WebBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Delete
+      Properties:
+        BucketName: bioalert-web-${self:provider.stage}-${aws:accountId}
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        WebsiteConfiguration:
+          IndexDocument: index.html
+
+    WebBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: !Sub '${WebBucket.Arn}/*'
+
   Outputs:
     DBEndpoint:
       Description: 'RDS endpoint (host)'
@@ -182,3 +213,8 @@ resources:
       Value: !GetAtt DBSecurityGroup.GroupId
     ConversationsTableName:
       Value: !Ref ConversationsTable
+    WebBucketUrl:
+      Description: 'S3 website URL para las vistas web'
+      Value: !GetAtt WebBucket.WebsiteURL
+      Export:
+        Name: bioalert-${self:provider.stage}-web-url

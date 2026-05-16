@@ -4,7 +4,7 @@ Este archivo sirve para llevar el control del progreso del Track B. Podés marca
 
 ## Fase 1: Pre-requisitos y Coordinación
 - [ ] 1.1 Opt-in al sandbox de Kapso (Coordinar con Miguel).
-- [ ] 1.2 Definir especificación de fixtures y enviar a Jose Maza.
+- [x] 1.2 Definir especificación de fixtures y enviar a Jose Maza. (Fixtures SQL escritos en `data/fixtures/`)
 - [x] 1.3 Esperar a que Jose Maza suba `lambdas/shared/`. (Completado por nosotros)
 
 ## Fase 2: Alertas Core (Alcance PRD)
@@ -20,6 +20,8 @@ Este archivo sirve para llevar el control del progreso del Track B. Podés marca
 - [ ] 3.2 Probar `nutrition-weekly` (verificar subida a S3 y link de WhatsApp).
 - [x] 3.3 Implementar `lambdas/cafeteria-weekly/` (EXT-3 + EXT-5 - Reporte Cafetería + Insight Cruzado).
 - [ ] 3.4 Probar `cafeteria-weekly` (verificar subida a S3 y link de WhatsApp).
+- [x] 3.5 Crear vista web `web/nutrition-report/index.html` (Chart.js).
+- [x] 3.6 Crear vista web `web/cafeteria-insights/index.html` (Chart.js + benchmark).
 
 ## Fase 4: Cierre y Pulido
 - [ ] 4.1 Grabar video de respaldo (Backup Demo).
