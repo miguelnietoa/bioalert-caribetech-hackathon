@@ -46,6 +46,7 @@ build:
     format: esm
     external:
       - '@aws-sdk/*'
+      - '@aws-sdk/client-s3'
 
 # Funciones se van agregando incrementalmente.
 # Vacío al inicio: el primer deploy solo crea la infra (RDS, DynamoDB, SSM).
@@ -71,7 +72,8 @@ functions:
     handler: lambdas/stock-cron/index.handler
     timeout: 60
     memorySize: 512
-    environment: { STAGE: ${self:provider.stage} }
+    environment:
+      STAGE: ${self:provider.stage}
     events:
       - schedule: cron(0 12 ? * * *)   # 7 AM Colombia
   nutrition-weekly:
