@@ -1,18 +1,5 @@
--- data/fixtures/13-product-allergens.sql
--- Mapeo de productos a alérgenos, basado en top productos del caso demo
--- y en la lógica de product_nutrition
-
 TRUNCATE bioalert.product_allergens;
 
--- Lactosa: productos con queso, leche, chocolate con leche, yogurt, cereal con leche
-INSERT INTO bioalert.product_allergens (nombre_producto, allergen_name) VALUES
-  ('CHOKIS CHOCOLATE',        'lactosa'),   -- Mateo compra esto (demo trigger)
-  ('CHOKIS CHISPAS GALLETAS', 'lactosa'),
-  ('CHOCOLATINA JET 12GR',    'lactosa'),
-  ('CEREAL ALQUEMIX (FLIPS/MILO)', 'lactosa')
-ON CONFLICT DO NOTHING;
-
--- Gluten: empanadas, pan, galletas, deditos, productos con harina de trigo
 INSERT INTO bioalert.product_allergens (nombre_producto, allergen_name)
 SELECT nombre_producto, 'gluten'
 FROM bioalert.product_nutrition
@@ -20,13 +7,26 @@ WHERE canonical_name LIKE '%dedito%'
    OR canonical_name LIKE '%pan%'
    OR canonical_name LIKE '%galleta%'
    OR canonical_name LIKE '%empanada%'
-ON CONFLICT DO NOTHING;
+   OR canonical_name LIKE '%oreo%';
 
--- Mani: productos con maní o nueces
+INSERT INTO bioalert.product_allergens (nombre_producto, allergen_name)
+SELECT nombre_producto, 'lactosa'
+FROM bioalert.product_nutrition
+WHERE canonical_name LIKE '%queso%'
+   OR canonical_name LIKE '%leche%'
+   OR canonical_name LIKE '%yogurt%'
+   OR canonical_name LIKE '%chokis%'
+   OR canonical_name LIKE '%chocolate%'
+   OR canonical_name LIKE '%cereal%';
+
 INSERT INTO bioalert.product_allergens (nombre_producto, allergen_name)
 SELECT nombre_producto, 'mani'
 FROM bioalert.product_nutrition
 WHERE canonical_name LIKE '%mani%'
-   OR canonical_name LIKE '%nube%'
-   OR canonical_name LIKE '%snickers%'
+   OR canonical_name LIKE '%cacahuate%';
+
+-- Demo US-03: CHOKIS explícito para alerta con Mateo (lactosa)
+INSERT INTO bioalert.product_allergens (nombre_producto, allergen_name) VALUES
+  ('CHOKIS CHOCOLATE', 'lactosa'),
+  ('CHOKIS CHISPAS GALLETAS', 'lactosa')
 ON CONFLICT DO NOTHING;
