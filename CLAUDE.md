@@ -15,7 +15,13 @@ Cuando haya conflicto: PRD gana en stack/arquitectura, plan gana en alcance (por
 
 ## 1. Resumen ejecutivo
 
-BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías escolares de Biofood. Convierte la data transaccional existente en PostgreSQL en alertas proactivas (alérgenos, ausencia de consumo, stock crítico) y respuestas conversacionales en lenguaje natural. Sobre el PRD literal (5 user stories, stack AWS Serverless + Node.js + Claude API) agregamos seis extensiones quirúrgicas (EXT-1..EXT-6) que cubren los 3 pilares del brief público: recarga inteligente con anchoring, reporte nutricional semanal, analítica con benchmark nacional para la cafetería, explicabilidad en cada alerta, insight cruzado padre↔cafetería y quick replies. Demo arranca con caso real "Diana y Mateo" del dataset; pitch cierra con uplift de ticket en $ extrapolado a los 90 colegios de Biofood. **Premio: $2.000.000 COP. Hackathon 24h. Equipo: 3 devs senior + 1 product senior.**
+BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías escolares de Biofood. Convierte la data transaccional existente en PostgreSQL en alertas proactivas (alérgenos, ausencia de consumo, stock crítico) y respuestas conversacionales en lenguaje natural. Sobre el PRD literal (5 user stories, stack AWS Serverless + Node.js + Claude API) agregamos seis extensiones quirúrgicas (EXT-1..EXT-6) que cubren los 3 pilares del brief público: recarga inteligente con anchoring, reporte nutricional semanal, analítica con benchmark nacional para la cafetería, explicabilidad en cada alerta, insight cruzado padre↔cafetería y quick replies. Demo arranca con caso real "Diana y Mateo" del dataset; pitch cierra con uplift de ticket en $ extrapolado a los 90 colegios de Biofood. **Premio: $2.000.000 COP. Hackathon 24h. Equipo: 3 devs senior + 1 product senior (4 personas total).**
+
+### 1.1. Dataset real disponible (extraído de reto.biofoodsoftware.co)
+
+- Postgres en `3.208.123.187:5432`, db `biofooddb`, usuario `hackathon_dev`, read-only sobre tablas existentes. Credenciales en `.env.example` (públicas, parte del reto).
+- **~4.2M ventas + ~3M recargas, años 2024-2026.** El PRD dice "últimos 30 días" para acotar contexto al LLM, pero el análisis exploratorio y el cálculo de uplift pueden y deben usar toda la historia.
+- Cuentas demo de la plataforma Biofood existente (admin de colegio + padre) en `.env.example` — sirven para testear UX actual y entender las tablas reales.
 
 ---
 
@@ -145,7 +151,20 @@ Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (
 
 ---
 
-## 7. Estado actual de cada componente
+## 7. Reparto del equipo (4 personas: 3 devs + 1 product)
+
+| Rol | Responsabilidad principal | Lambdas / Artefactos owned |
+|---|---|---|
+| **Dev 1 — Conversacional** | Canal WhatsApp + agente conversacional end-to-end | Kapso onboarding + `lambdas/conversation-handler/` (US-01, US-04, EXT-1, EXT-4, EXT-6) + las 8 tools + `lambdas/shared/whatsapp.ts` + `lambdas/shared/claude.ts` |
+| **Dev 2 — Alertas** | Todas las alertas (síncronas y por cron) | `lambdas/allergen-polling/` (US-03) + `lambdas/absence-cron/` (US-02) + `lambdas/stock-cron/` (US-05) + `lambdas/nutrition-weekly/` (EXT-2) + `lambdas/cafeteria-weekly/` (EXT-3 + EXT-5) |
+| **Dev 3 — Infra + Data + Web** | AWS, IaC, fixtures, vistas estáticas | Cuenta AWS + Serverless Framework setup + RDS Proxy + DynamoDB + SSM + S3/CloudFront + `data/fixtures/*.sql` + bootstrap nutrición con Claude + `web/nutrition-report/` + `web/cafeteria-insights/` + `lambdas/shared/db.ts` + `lambdas/shared/dynamo-conversations.ts` + `lambdas/shared/ssm.ts` |
+| **Product Senior** | Caso demo + uplift + pitch (sin código) | EDA del dataset → elección de colegio piloto → caso "Diana y Mateo" + cálculo de uplift en 3 escenarios + outline de pitch (15 slides) + 3 ensayos completos |
+
+Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear nada en la nube). Producto Senior trabaja en paralelo con la DB en local desde H0.
+
+---
+
+## 8. Estado actual de cada componente
 
 > Actualizar al cierre de cada fase. Estados: `not started` / `in progress` / `done` / `blocked`.
 
@@ -186,7 +205,7 @@ Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (
 
 ---
 
-## 8. Métricas de éxito (PRD §07 + nuestras)
+## 9. Métricas de éxito (PRD §07 + nuestras)
 
 | Métrica | Meta |
 |---|---|
@@ -202,7 +221,7 @@ Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (
 
 ---
 
-## 9. Gotchas operacionales del hackathon
+## 10. Gotchas operacionales del hackathon
 
 - **Kapso Sandbox:** TypeScript SDK nativo, soporta `send-text`, `send-buttons`, `send-lists`, `send-image`, etc. Webhooks de entrada con HMAC security. Es un número compartido — confirmar en H0 el flujo exacto de opt-in (qué tiene que enviar el padre antes de poder recibir) y si hay rate limit o session window. Si surgen sorpresas, fallback a Twilio.
 - **Twilio Sandbox (fallback):** opt-in con `join <code>`, sesión expira 3 días, rate limit 1 msg/3s, NO documenta soporte sandbox de interactive messages → si llegamos acá, EXT-6 puede degradar a texto + numeritos ("Responde 1, 2 o 3"). Colombia no está restringido.
@@ -212,16 +231,16 @@ Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (
 
 ---
 
-## 10. Flujo de trabajo en cada sesión
+## 11. Flujo de trabajo en cada sesión
 
 1. Lee este `CLAUDE.md` completo. Si una sección dice "not started" no asumas que ya existe.
 2. Lee la sección 7 (Estado actual) y decide en qué fase del cronograma del plan estamos.
 3. Antes de codear: revisa los `README.md` de las subcarpetas relevantes — explican qué va dónde.
-4. Al terminar una fase: actualiza la sección 7 con lo que cambió. Commit con mensaje convencional (`feat:`, `chore:`, `fix:`, `docs:`).
+4. Al terminar una fase: actualiza la sección 8 (Estado actual) con lo que cambió. Commit con mensaje convencional (`feat:`, `chore:`, `fix:`, `docs:`).
 5. Si tomas una decisión técnica que afecta a otros, documéntala en §2.1 (si desvía del PRD) o en el README de la carpeta correspondiente.
 
 ---
 
-## 11. Una frase para defender el proyecto (apéndice del plan)
+## 12. Una frase para defender el proyecto (apéndice del plan)
 
 > *"BioAlert+ activa los 10 años de data transaccional de Biofood vía un agente WhatsApp que cumple los 3 pilares del reto: recargas más altas para padres con justificación nutricional personalizada, reportes nutricionales semanales con comparación con compañeros, e inteligencia accionable para cafeterías con benchmark nacional. Construido en el stack que Pedro Noguera definió en su PRD. Aplicado a los 90 colegios de Biofood, representa entre $1.2B y $2.4B COP adicionales en recargas anuales."*
