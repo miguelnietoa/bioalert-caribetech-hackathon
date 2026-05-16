@@ -1,0 +1,133 @@
+service: bioalert
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'hackathon'}
+  profile: biofood-hackathon
+  stackName: bioalert-${self:provider.stage}
+  versionFunctions: false
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            - ssm:GetParametersByPath
+          Resource: 'arn:aws:ssm:${aws:region}:${aws:accountId}:parameter/bioalert/*'
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+          Resource: 'arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/bioalert-conversations-${self:provider.stage}'
+
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: false
+    target: node20
+    platform: node
+    format: esm
+    external:
+      - '@aws-sdk/*'
+
+# Funciones se van agregando incrementalmente.
+# Vacío al inicio: el primer deploy solo crea la infra (RDS, DynamoDB, SSM).
+functions: {}
+
+resources:
+  Resources:
+
+    # ───────────────────────────────────────────────
+    # RDS PostgreSQL — clon del reto + tablas bioalert
+    # ───────────────────────────────────────────────
+    DBSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupName: bioalert-rds-${self:provider.stage}
+        GroupDescription: 'bioalert RDS public access (hackathon only — scope down post-event)'
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 5432
+            ToPort: 5432
+            CidrIp: 0.0.0.0/0
+            Description: 'Open during 24h hackathon. Strong password protects.'
+
+    Database:
+      Type: AWS::RDS::DBInstance
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
+      Properties:
+        DBInstanceIdentifier: bioalert-${self:provider.stage}
+        Engine: postgres
+        EngineVersion: '15.7'
+        DBInstanceClass: db.t4g.micro
+        AllocatedStorage: 20
+        StorageType: gp3
+        DBName: bioalert
+        MasterUsername: bioalert_app
+        MasterUserPassword: ${ssm:/bioalert/${self:provider.stage}/db/password}
+        VPCSecurityGroups:
+          - !GetAtt DBSecurityGroup.GroupId
+        PubliclyAccessible: true
+        BackupRetentionPeriod: 0
+        StorageEncrypted: false
+        DeletionProtection: false
+        AutoMinorVersionUpgrade: true
+        Tags:
+          - Key: Project
+            Value: bioalert
+          - Key: Stage
+            Value: ${self:provider.stage}
+
+    DBHostParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /bioalert/${self:provider.stage}/db/host
+        Type: String
+        Value: !GetAtt Database.Endpoint.Address
+        Description: 'RDS endpoint hostname (resolved post-deploy)'
+
+    DBPortParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /bioalert/${self:provider.stage}/db/port
+        Type: String
+        Value: !GetAtt Database.Endpoint.Port
+
+    # ───────────────────────────────────────────────
+    # DynamoDB — sesiones conversacionales (TTL 1h)
+    # ───────────────────────────────────────────────
+    ConversationsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: bioalert-conversations-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: phone_e164
+            AttributeType: S
+        KeySchema:
+          - AttributeName: phone_e164
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: expires_at
+          Enabled: true
+
+  Outputs:
+    DBEndpoint:
+      Description: 'RDS endpoint (host)'
+      Value: !GetAtt Database.Endpoint.Address
+      Export:
+        Name: bioalert-${self:provider.stage}-db-host
+    DBSecurityGroupId:
+      Value: !GetAtt DBSecurityGroup.GroupId
+    ConversationsTableName:
+      Value: !Ref ConversationsTable

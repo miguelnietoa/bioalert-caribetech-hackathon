@@ -53,6 +53,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 | WhatsApp Business API (Meta Cloud API directa) | **Kapso Sandbox** (primario) / Twilio Sandbox (fallback) | Meta puede tardar horas o días en aprobar incluso sandbox. Kapso y Twilio son instantáneos. Kapso gana porque tiene SDK TypeScript nativo, soporte explícito de interactive messages (necesarios para EXT-6) y webhooks con HMAC. La abstracción en `lambdas/shared/whatsapp.ts` permite migrar a Meta directo post-hackathon. |
 | Tabla nutricional cruzada manualmente con USDA/ICBF | Bootstrap script que llama a Claude una sola vez para estimar valores nutricionales de cada producto del catálogo Biofood y persiste en `product_nutrition` | Cruzar manualmente USDA/ICBF con productos colombianos era 4h de Dev 4 sin valor diferencial. Claude estima con calidad razonable para el demo. |
 | Modelo de datos relacional (`students`, `transactions`, `products`, `inventory`...) | Adaptación al schema real del reto: dos tablas planas (`hackaton_ventas`, `hackaton_recargas`) + fixtures `bioalert_*` en el mismo schema | El reto no expone schema relacional. `usuario_identificacion` reemplaza a `students.id`, `nombre_producto` reemplaza a `products.id`, balance se calcula on-the-fly. **`grade` no existe → EXT-2 peer compare se degrada a "compañeros del mismo colegio".** Detalle en `docs/db-schema.md`. |
+| Lambdas leen directo del Postgres del reto | Clon ETL a RDS propia en la cuenta AWS (Postgres 15.7, db.t4g.micro Free Tier, schema `reto` con tipos correctos + schema `bioalert` para fixtures) | (1) PRD pide RDS Proxy y solo funciona contra DB en nuestra cuenta. (2) Sin permiso ALTER en biofooddb no hay índices propios → latencia >4s del PRD. (3) Tipos limpios (`fecha::date`, `precio::numeric`) elimina casts en cada query de tools. (4) Aislamiento de los otros ~200 equipos del reto. ETL: `scripts/etl-reto-to-rds.sh` con pipeline `COPY TO STDOUT \| COPY FROM STDIN`. Re-sincronizable cuando queramos. |
 
 ### 2.2. Prohibido por el PRD — respetar literal
 
@@ -190,6 +191,9 @@ Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear 
 
 ### Infra
 - AWS account: **done** — account `642722971137`, región `us-east-1`, profile local `biofood-hackathon` (IAM user con `AdministratorAccess`). Verificable con `aws sts get-caller-identity --profile biofood-hackathon`.
+- Serverless Framework v4 setup + `serverless.yml` base: **done** — define RDS `db.t4g.micro` (Postgres 15.7), security group abierto 5432, DynamoDB `bioalert-conversations-hackathon` con TTL, SSM params. `functions: {}` vacío hasta H3.
+- `package.json` + `tsconfig.json`: **done** — TS estricto, ES2022, ESM, esbuild bundling via Serverless v4.
+- RDS aprovisionada + schema aplicado + ETL del reto: **not started** — pendiente `npm install` + `bootstrap-ssm.sh` + `serverless deploy` + `apply-schema.sh` + `etl-reto-to-rds.sh`.
 - Serverless Framework v4 setup + serverless.yml base: **not started**
 - RDS Proxy + conexión a Biofood Global DB: **not started** (acceso confirmado por equipo)
 - DynamoDB `conversations`: **not started**
@@ -199,7 +203,7 @@ Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear 
 - S3 + CloudFront para vistas estáticas: **not started**
 
 ### Canal
-- **Kapso Sandbox** activado + webhook configurado + opt-in del equipo + plan de fallback Twilio: **not started** (ya no es bloqueador crítico porque ambos sandboxes son instantáneos)
+- **Kapso Sandbox** activado + webhook configurado (con webhook.site temporal) + opt-in del owner: **done** — API key, sandbox number y webhook secret en `.env` local de Miguel. Webhook con debouncing 5s / batch 50 sobre `whatsapp.message.received`. Pendiente: pisar el placeholder de SSM con los valores reales (`aws ssm put-parameter --overwrite ...`) y opt-in del resto del equipo + 2-3 "padres demo".
 
 ### Lambdas
 - `conversation-handler` (US-01, US-04, EXT-1, tools 1-8, modelo Sonnet 4.6): **not started**
