@@ -53,6 +53,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 | WhatsApp Business API (Meta Cloud API directa) | **Kapso Sandbox** (primario) / Twilio Sandbox (fallback) | Meta puede tardar horas o días en aprobar incluso sandbox. Kapso y Twilio son instantáneos. Kapso gana porque tiene SDK TypeScript nativo, soporte explícito de interactive messages (necesarios para EXT-6) y webhooks con HMAC. La abstracción en `lambdas/shared/whatsapp.ts` permite migrar a Meta directo post-hackathon. |
 | Tabla nutricional cruzada manualmente con USDA/ICBF | Bootstrap script que llama a Claude una sola vez para estimar valores nutricionales de cada producto del catálogo Biofood y persiste en `product_nutrition` | Cruzar manualmente USDA/ICBF con productos colombianos era 4h de Dev 4 sin valor diferencial. Claude estima con calidad razonable para el demo. |
 | Modelo de datos relacional (`students`, `transactions`, `products`, `inventory`...) | Adaptación al schema real del reto: dos tablas planas (`hackaton_ventas`, `hackaton_recargas`) + fixtures `bioalert_*` en el mismo schema | El reto no expone schema relacional. `usuario_identificacion` reemplaza a `students.id`, `nombre_producto` reemplaza a `products.id`, balance se calcula on-the-fly. **`grade` no existe → EXT-2 peer compare se degrada a "compañeros del mismo colegio".** Detalle en `docs/db-schema.md`. |
+| Lambdas leen directo del Postgres del reto | Clon ETL a RDS propia en la cuenta AWS (Postgres 15.7, db.t4g.micro Free Tier, schema `reto` con tipos correctos + schema `bioalert` para fixtures) | (1) PRD pide RDS Proxy y solo funciona contra DB en nuestra cuenta. (2) Sin permiso ALTER en biofooddb no hay índices propios → latencia >4s del PRD. (3) Tipos limpios (`fecha::date`, `precio::numeric`) elimina casts en cada query de tools. (4) Aislamiento de los otros ~200 equipos del reto. ETL: `scripts/etl-reto-to-rds.sh` con pipeline `COPY TO STDOUT \| COPY FROM STDIN`. Re-sincronizable cuando queramos. |
 
 ### 2.2. Prohibido por el PRD — respetar literal
 
@@ -171,16 +172,17 @@ Las tools del agente queryean **directo contra `hackaton_*`** y joinean con `bio
 
 ---
 
-## 7. Reparto del equipo (4 personas: 3 devs + 1 product)
+## 7. Reparto del equipo (3 personas)
 
-| Rol | Responsabilidad principal | Lambdas / Artefactos owned |
+| Rol | Owner | Plan detallado |
 |---|---|---|
-| **Dev 1 — Conversacional** | Canal WhatsApp + agente conversacional end-to-end | Kapso onboarding + `lambdas/conversation-handler/` (US-01, US-04, EXT-1, EXT-4, EXT-6) + las 8 tools + `lambdas/shared/whatsapp.ts` + `lambdas/shared/claude.ts` |
-| **Dev 2 — Alertas** | Todas las alertas (síncronas y por cron) | `lambdas/allergen-polling/` (US-03) + `lambdas/absence-cron/` (US-02) + `lambdas/stock-cron/` (US-05) + `lambdas/nutrition-weekly/` (EXT-2) + `lambdas/cafeteria-weekly/` (EXT-3 + EXT-5) |
-| **Dev 3 — Infra + Data + Web** | AWS, IaC, fixtures, vistas estáticas | Cuenta AWS + Serverless Framework setup + RDS Proxy + DynamoDB + SSM + S3/CloudFront + `data/fixtures/*.sql` + bootstrap nutrición con Claude + `web/nutrition-report/` + `web/cafeteria-insights/` + `lambdas/shared/db.ts` + `lambdas/shared/dynamo-conversations.ts` + `lambdas/shared/ssm.ts` |
-| **Product Senior** | Caso demo + uplift + pitch (sin código) | EDA del dataset → elección de colegio piloto → caso "Diana y Mateo" + cálculo de uplift en 3 escenarios + outline de pitch (15 slides) + 3 ensayos completos |
+| **Track A — Conversacional + Producto** | **Miguel Nieto** | [`docs/plans/2026-05-16-track-a-conversacional.md`](docs/plans/2026-05-16-track-a-conversacional.md) |
+| **Track B — Alertas + Reportes** | **Jose Arcila** | [`docs/plans/2026-05-16-track-b-alertas.md`](docs/plans/2026-05-16-track-b-alertas.md) |
+| **Track C — Infra + Data + Web** | **Jose Maza** | [`docs/plans/2026-05-16-track-c-infra-data-web.md`](docs/plans/2026-05-16-track-c-infra-data-web.md) |
 
-Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear nada en la nube). Producto Senior trabaja en paralelo con la DB en local desde H0.
+Overview de dependencias, sync checkpoints (H+2, H+4, H+8, H+12, H+16, H+20, H+22) y reglas anti-conflicto en [`docs/team-plan.md`](docs/team-plan.md).
+
+Camino crítico: Jose Maza desbloquea a Miguel y Jose Arcila. Mientras Jose Maza arma infra (H0-H4), Miguel hace EDA + caso demo y Jose Arcila hace opt-in + specs.
 
 ---
 
@@ -190,6 +192,9 @@ Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear 
 
 ### Infra
 - AWS account: **done** — account `642722971137`, región `us-east-1`, profile local `biofood-hackathon` (IAM user con `AdministratorAccess`). Verificable con `aws sts get-caller-identity --profile biofood-hackathon`.
+- Serverless Framework v4 setup + `serverless.yml` base: **done** — define RDS `db.t4g.micro` (Postgres 15.7), security group abierto 5432, DynamoDB `bioalert-conversations-hackathon` con TTL, SSM params. `functions: {}` vacío hasta H3.
+- `package.json` + `tsconfig.json`: **done** — TS estricto, ES2022, ESM, esbuild bundling via Serverless v4.
+- RDS aprovisionada + schema aplicado + ETL del reto: **not started** — pendiente `npm install` + `bootstrap-ssm.sh` + `serverless deploy` + `apply-schema.sh` + `etl-reto-to-rds.sh`.
 - Serverless Framework v4 setup + serverless.yml base: **not started**
 - RDS Proxy + conexión a Biofood Global DB: **not started** (acceso confirmado por equipo)
 - DynamoDB `conversations`: **not started**
@@ -199,7 +204,7 @@ Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear 
 - S3 + CloudFront para vistas estáticas: **not started**
 
 ### Canal
-- **Kapso Sandbox** activado + webhook configurado + opt-in del equipo + plan de fallback Twilio: **not started** (ya no es bloqueador crítico porque ambos sandboxes son instantáneos)
+- **Kapso Sandbox** activado + webhook configurado (con webhook.site temporal) + opt-in del owner: **done** — API key, sandbox number y webhook secret en `.env` local de Miguel. Webhook con debouncing 5s / batch 50 sobre `whatsapp.message.received`. Pendiente: pisar el placeholder de SSM con los valores reales (`aws ssm put-parameter --overwrite ...`) y opt-in del resto del equipo + 2-3 "padres demo".
 
 ### Lambdas
 - `conversation-handler` (US-01, US-04, EXT-1, tools 1-8, modelo Sonnet 4.6): **not started**
