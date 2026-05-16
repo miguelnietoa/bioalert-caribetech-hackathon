@@ -223,10 +223,11 @@ Camino crítico: Jose Maza desbloquea a Miguel y Jose Arcila. Mientras Jose Maza
 - Vista nutrition-report (EXT-2): **not started**
 - Vista cafeteria-insights (EXT-3): **not started**
 
-### Producto
+### Producto (branch `track-a-conversacional`)
 - Caso "Diana y Mateo" elegido y documentado: **done** — `analysis/results/caso-demo.md`. Colegio piloto `900000680`. Mateo Martinez Ramirez (`0010204385`, 41.4% dulce), padre `0090233965` → mapeado como "Diana" al tel de Miguel. Esteban Nieto Lopez (irregular) + Valentina Mendoza Morales (control). Métricas: Mateo gasta 1.9× vs promedio colegio, 2.6× más veces, 9 de 10 productos top son snack/dulce.
-- Cálculo de uplift por 3 escenarios + extrapolación 90 colegios: **not started**
-- Pitch outline (15 slides max) + ensayos: **not started**
+- Cálculo de uplift por 3 escenarios + extrapolación 90 colegios: **done** — `analysis/results/uplift-pitch.md`. Pesimista $338M / Base $1.014B / Optimista $2.102B COP/año en 90 colegios. Frase de cierre: "$1.0B-$2.1B COP anuales".
+- Pitch outline (15 slides max): **done** — `docs/pitch-outline.md`. ~11 minutos, con script del demo en vivo y schedule de ensayos.
+- 3 ensayos del pitch: **not started** (H+20 a H+23 con el equipo).
 
 ---
 

@@ -1,3 +1,5 @@
+import type Anthropic from '@anthropic-ai/sdk'
+
 export interface Venta {
   id: number
   usuario_identificacion: string
@@ -44,7 +46,10 @@ export interface ProductNutrition {
 
 export interface ConversationSession {
   phone_e164: string
-  history: Array<{ role: 'user' | 'assistant'; content: string }>
+  // history acepta tanto strings simples (user input) como bloques completos
+  // (assistant con tool_use, user con tool_result). Compatible directo con
+  // Anthropic.MessageParam para pasar a messages.create sin transformar.
+  history: Anthropic.MessageParam[]
   identity?:
     | { kind: 'parent'; usuario_identificacion: string }
     | { kind: 'admin'; nit_colegio: string }
