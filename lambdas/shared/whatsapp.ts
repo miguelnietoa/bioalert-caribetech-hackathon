@@ -2,7 +2,9 @@ import crypto from 'node:crypto'
 import { getSecret } from './ssm.js'
 import type { WhatsAppButton } from './types.js'
 
-const KAPSO_BASE = 'https://api.kapso.ai/platform/v1'
+const KAPSO_META = 'https://api.kapso.ai/meta/whatsapp/v24.0'
+
+let cachedPhoneNumberId: string | null = null
 
 async function authHeaders(): Promise<Record<string, string>> {
   const apiKey = await getSecret('kapso/api-key')
@@ -12,16 +14,38 @@ async function authHeaders(): Promise<Record<string, string>> {
   }
 }
 
-export async function sendText(to: string, body: string): Promise<void> {
+async function phoneNumberId(): Promise<string> {
+  if (cachedPhoneNumberId) return cachedPhoneNumberId
+  cachedPhoneNumberId = await getSecret('kapso/phone-number-id')
+  return cachedPhoneNumberId
+}
+
+function normalizeTo(to: string): string {
+  return to.replace(/^\+/, '')
+}
+
+async function sendMessage(payload: Record<string, unknown>): Promise<void> {
   const headers = await authHeaders()
-  const res = await fetch(`${KAPSO_BASE}/whatsapp/messages`, {
+  const id = await phoneNumberId()
+  const res = await fetch(`${KAPSO_META}/${id}/messages`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ to, type: 'text', text: { body } }),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      ...payload,
+    }),
   })
   if (!res.ok) {
-    throw new Error(`Kapso sendText failed: ${res.status} ${await res.text()}`)
+    throw new Error(`Kapso send failed: ${res.status} ${await res.text()}`)
   }
+}
+
+export async function sendText(to: string, body: string): Promise<void> {
+  await sendMessage({
+    to: normalizeTo(to),
+    type: 'text',
+    text: { body },
+  })
 }
 
 export async function sendButtons(
@@ -29,30 +53,20 @@ export async function sendButtons(
   body: string,
   buttons: WhatsAppButton[],
 ): Promise<void> {
-  const headers = await authHeaders()
-  const res = await fetch(`${KAPSO_BASE}/whatsapp/messages`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      to,
-      type: 'interactive',
-      interactive: {
-        type: 'button',
-        body: { text: body },
-        action: {
-          buttons: buttons.slice(0, 3).map((b) => ({
-            type: 'reply',
-            reply: { id: b.id, title: b.title.slice(0, 20) },
-          })),
-        },
+  await sendMessage({
+    to: normalizeTo(to),
+    type: 'interactive',
+    interactive: {
+      type: 'button',
+      body: { text: body },
+      action: {
+        buttons: buttons.slice(0, 3).map((b) => ({
+          type: 'reply',
+          reply: { id: b.id, title: b.title.slice(0, 20) },
+        })),
       },
-    }),
+    },
   })
-  if (!res.ok) {
-    throw new Error(
-      `Kapso sendButtons failed: ${res.status} ${await res.text()}`,
-    )
-  }
 }
 
 export async function verifyWebhookSignature(

@@ -50,6 +50,7 @@ put "anthropic/api-key" "${ANTHROPIC_API_KEY:-}"
 put "kapso/api-key" "${KAPSO_API_KEY:-}"
 put "kapso/webhook-secret" "${KAPSO_WEBHOOK_SECRET:-}"
 put "kapso/sandbox-number" "${KAPSO_SANDBOX_NUMBER:-}"
+put "kapso/phone-number-id" "${KAPSO_PHONE_NUMBER_ID:-}"
 
 echo
 echo "Listo. Verificá (sin mostrar valores):"
