@@ -17,7 +17,7 @@
 - Tenés que tener acceso al canal del equipo y a la DB del reto (creds en `.env.example`).
 - Tu opt-in al sandbox de Kapso ya fue hecho (vos lo configuraste).
 - `psql` instalado.
-- Esperá a que Dev 3 confirme **"shared/* committed"** antes de empezar el handler (Task 5+). Mientras tanto: Tasks 1-4 NO dependen de Dev 3.
+- Esperá a que Jose Maza confirme **"shared/* committed"** antes de empezar el handler (Task 5+). Mientras tanto: Tasks 1-4 NO dependen de Jose Maza.
 
 ---
 
@@ -38,11 +38,11 @@ Expected: tabla con ~7 colegios candidatos. El primero recomendado en [`../db-sc
 
 **Step 2: Decidir colegio**
 
-Por defecto **900000680**. Si después de mirar la data preferís otro, anotalo y avisá al equipo — afecta a Dev 3 (`bootstrap-nutrition.ts` usa NIT_COLEGIO env var).
+Por defecto **900000680**. Si después de mirar la data preferís otro, anotalo y avisá al equipo — afecta a Jose Maza (`bootstrap-nutrition.ts` usa NIT_COLEGIO env var).
 
 **Step 3: Anunciar al equipo**
 
-> 🎯 Colegio piloto: **NIT 900000680**. Dev 3, podés correr `NIT_COLEGIO=900000680 npm run nutrition:bootstrap`.
+> 🎯 Colegio piloto: **NIT 900000680**. Jose Maza, podés correr `NIT_COLEGIO=900000680 npm run nutrition:bootstrap`.
 
 ---
 
@@ -124,11 +124,11 @@ git commit -m "docs: caso demo Diana y Mateo (colegio 900000680)"
 git push
 ```
 
-**Step 3: Pasarle a Dev 3 los IDs**
+**Step 3: Pasarle a Jose Maza los IDs**
 
-Dev 3 los necesita para `data/fixtures/10-parent-phone-map.sql` (mapear `identificacion_padre` real → tu teléfono que opt-in'easte).
+Jose Maza los necesita para `data/fixtures/10-parent-phone-map.sql` (mapear `identificacion_padre` real → tu teléfono que opt-in'easte).
 
-> 📋 Para Dev 3: padres a mapear en `parent_phone_map`:
+> 📋 Para Jose Maza: padres a mapear en `parent_phone_map`:
 > - `<id_padre_mateo>` → `+57<tu_tel>` (Diana, demo principal)
 > - `<id_padre_2>` → `+57<tel_dev2>` (padre demo 2)
 > - `<id_padre_3>` → `+57<tel_dev3>` (padre demo 3)
@@ -137,7 +137,7 @@ Dev 3 los necesita para `data/fixtures/10-parent-phone-map.sql` (mapear `identif
 
 ## ⏸️ CHECKPOINT — esperar shared/
 
-Antes de seguir con Tasks 4+, **Dev 3 tiene que haber anunciado "shared/* committed"** (H+4 esperado). Mientras tanto, podés:
+Antes de seguir con Tasks 4+, **Jose Maza tiene que haber anunciado "shared/* committed"** (H+4 esperado). Mientras tanto, podés:
 
 - Refinar el caso demo
 - Pre-redactar el system prompt (ver Task 6 abajo)
@@ -149,7 +149,7 @@ Antes de seguir con Tasks 4+, **Dev 3 tiene que haber anunciado "shared/* commit
 
 **Files:**
 - Create: `lambdas/conversation-handler/index.ts`
-- Modify: `serverless.yml` (agregar la función) — coordinar con Dev 3
+- Modify: `serverless.yml` (agregar la función) — coordinar con Jose Maza
 
 **Step 1: Escribir el handler base**
 
@@ -229,7 +229,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 }
 ```
 
-**Step 2: Coordinar con Dev 3 para agregar la función a `serverless.yml`**
+**Step 2: Coordinar con Jose Maza para agregar la función a `serverless.yml`**
 
 Mandale este snippet por chat:
 
@@ -522,7 +522,7 @@ git push
 
 **Step 1: Deploy**
 
-Coordiná con Dev 3 (es quien controla `serverless.yml`):
+Coordiná con Jose Maza (es quien controla `serverless.yml`):
 
 ```bash
 npx serverless deploy --stage hackathon -f conversation-handler
@@ -540,7 +540,7 @@ https://<api-id>.execute-api.us-east-1.amazonaws.com/webhook/kapso
 
 Enviá al sandbox: `¿qué comió Mateo hoy?`
 
-Expected: respuesta del bot en <8s (4s Claude + 5s debouncing window). Si llega "no tengo esa información hoy" significa que el teléfono no está mapeado en `parent_phone_map`. Coordiná con Dev 3.
+Expected: respuesta del bot en <8s (4s Claude + 5s debouncing window). Si llega "no tengo esa información hoy" significa que el teléfono no está mapeado en `parent_phone_map`. Coordiná con Jose Maza.
 
 **Step 4: Iterá**
 

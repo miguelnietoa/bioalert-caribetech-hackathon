@@ -1,6 +1,6 @@
 # Track B — Alertas + Reportes — Implementation Plan
 
-> **For Dev 2:** Sos dueño de las 5 Lambdas event-driven: alérgenos en tiempo real, ausencia, stock, reporte nutricional semanal, y reporte de cafetería con insight cruzado. Patrones repetitivos — la primera Lambda toma 1.5h, las otras 4 toman 30-45 min cada una si copiás bien el patrón.
+> **For Jose Arcila:** Sos dueño de las 5 Lambdas event-driven: alérgenos en tiempo real, ausencia, stock, reporte nutricional semanal, y reporte de cafetería con insight cruzado. Patrones repetitivos — la primera Lambda toma 1.5h, las otras 4 toman 30-45 min cada una si copiás bien el patrón.
 >
 > Referencia transversal: [`../team-plan.md`](../team-plan.md), [`../db-schema.md`](../db-schema.md), [`../../CLAUDE.md`](../../CLAUDE.md).
 
@@ -17,7 +17,7 @@
 - Profile AWS `biofood-hackathon` configurado en tu máquina.
 - Tu número de WhatsApp opt-in al sandbox de Kapso (envía tu número a Miguel para crear el opt-in con el código de 6 caracteres).
 - `psql` instalado.
-- **Esperar a Dev 3** anuncio "shared/* committed" antes de empezar Task 3+. Mientras tanto: Tasks 1-2 son independientes.
+- **Esperar a Jose Maza** anuncio "shared/* committed" antes de empezar Task 3+. Mientras tanto: Tasks 1-2 son independientes.
 
 ---
 
@@ -31,15 +31,15 @@
 
 **Step 3:** Probá enviar `hola` al sandbox de Kapso desde tu WhatsApp y verificá con Miguel que llegue al webhook.site del equipo.
 
-> ✅ Avisá en el canal: "Dev 2 opt-in OK".
+> ✅ Avisá en el canal: "Jose Arcila opt-in OK".
 
 ---
 
 ## Task 2: Spec de fixtures que vos necesitás
 
-**Files:** ninguno (mensaje a Dev 3)
+**Files:** ninguno (mensaje a Jose Maza)
 
-**Step 1: Mandale a Dev 3 vía canal del equipo** los datos que necesitás en `bioalert.*` para que tus Lambdas tengan algo que disparar:
+**Step 1: Mandale a Jose Maza vía canal del equipo** los datos que necesitás en `bioalert.*` para que tus Lambdas tengan algo que disparar:
 
 - 3 estudiantes con alergias (ej. `usuario_identificacion=<id>`, allergen=`mani`)
 - 5 productos con esos alérgenos (ej. dedito queso → lactosa)
@@ -52,7 +52,7 @@ Miguel te pasa los IDs reales cuando termine su EDA (Task 2 de [`2026-05-16-trac
 
 ## ⏸️ CHECKPOINT — esperar shared/
 
-Antes de Task 3, **Dev 3 anuncia "shared/* committed"** (esperado H+4). Mientras tanto, leé los handlers de Anthropic SDK y la doc de Kapso send-messages.
+Antes de Task 3, **Jose Maza anuncia "shared/* committed"** (esperado H+4). Mientras tanto, leé los handlers de Anthropic SDK y la doc de Kapso send-messages.
 
 ---
 
@@ -61,7 +61,7 @@ Antes de Task 3, **Dev 3 anuncia "shared/* committed"** (esperado H+4). Mientras
 **Files:**
 - Create: `lambdas/allergen-polling/index.ts`
 - Create: `lambdas/allergen-polling/queries/find-new-allergen-hits.sql`
-- Modify: `serverless.yml` (vía Dev 3 — mandale snippet)
+- Modify: `serverless.yml` (vía Jose Maza — mandale snippet)
 
 **Step 1: SQL — detectar transacciones nuevas con alérgeno**
 
@@ -163,9 +163,9 @@ export const handler: ScheduledHandler = async () => {
 }
 ```
 
-**Step 3: Snippet a Dev 3 para `serverless.yml`**
+**Step 3: Snippet a Jose Maza para `serverless.yml`**
 
-> Dev 3, agregale esto a `serverless.yml` en `functions:`:
+> Jose Maza, agregale esto a `serverless.yml` en `functions:`:
 > ```yaml
 > allergen-polling:
 >   handler: lambdas/allergen-polling/index.handler
@@ -248,7 +248,7 @@ WHERE NOT EXISTS (
 //   compra antes de las 11 AM según su patrón habitual."
 ```
 
-**Step 3: Snippet a Dev 3**
+**Step 3: Snippet a Jose Maza**
 
 > ```yaml
 > absence-cron:
@@ -323,7 +323,7 @@ for (const [phone, items] of byAdmin) {
 }
 ```
 
-**Step 3: Snippet a Dev 3**
+**Step 3: Snippet a Jose Maza**
 
 > ```yaml
 > stock-cron:
@@ -352,7 +352,7 @@ git push
 - Create: `lambdas/nutrition-weekly/queries/student-weekly-nutrition.sql`
 - Create: `lambdas/nutrition-weekly/queries/peer-avg-nutrition.sql`
 
-**Pre-requisito:** `bioalert.product_nutrition` ya poblada (Dev 3 lo hace en H+7).
+**Pre-requisito:** `bioalert.product_nutrition` ya poblada (Jose Maza lo hace en H+7).
 
 **Step 1: SQL agregado**
 
@@ -408,9 +408,9 @@ const body =
 await sendText(phone, body)
 ```
 
-**Step 3: Subir JSON a S3** — Dev 3 te explica cómo, usa `@aws-sdk/client-s3`.
+**Step 3: Subir JSON a S3** — Jose Maza te explica cómo, usa `@aws-sdk/client-s3`.
 
-**Step 4: Snippet a Dev 3**
+**Step 4: Snippet a Jose Maza**
 
 > ```yaml
 > nutrition-weekly:
@@ -560,7 +560,7 @@ Subílo a Drive del equipo. Si la demo en vivo falla por red/Kapso/etc, lo proye
 - Revisar logs de tus Lambdas: `npx serverless logs -f <name> --tail --stage hackathon`
 - Ajustar throttling si chocás con rate limit de Kapso
 - Asegurar que mensajes están bien formateados (no líneas cortadas raras)
-- Ayudar a Miguel y Dev 3 con bugs cruzados
+- Ayudar a Miguel y Jose Maza con bugs cruzados
 
 ---
 
