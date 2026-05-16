@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte Nutricional Semanal · BioAlert+</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 1rem; background: #f0f4f8; color: #1a202c; }
+    h1 { font-size: 1.4rem; }
+    .card { background: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .flag-red { color: #c53030; font-weight: 600; }
+    canvas { max-height: 240px; }
+  </style>
+</head>
+<body>
+  <h1>Reporte nutricional semanal</h1>
+  <div id="root">Cargando...</div>
+  <script>
+    const params = new URLSearchParams(location.search)
+    const studentId = params.get('student') || '0010204385'
+    fetch(`./data/${studentId}.json`)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json() })
+      .then(render)
+      .catch(() => {
+        document.getElementById('root').innerHTML =
+          '<div class="card">Sin datos aún. La Lambda <code>nutrition-weekly</code> sube <code>data/' + studentId + '.json</code> aquí.</div>'
+      })
+
+    function render(d) {
+      const root = document.getElementById('root')
+      root.innerHTML = `
+        <div class="card"><h2>${d.student_name}</h2><p>${d.school} · semana ${d.week}</p></div>
+        <div class="card"><h3>Top productos</h3><ul>${(d.top_products || []).map(p => `<li>${p.name} — ${p.count}x</li>`).join('')}</ul></div>
+        <div class="card"><h3>Macros vs. promedio del colegio</h3><canvas id="macros"></canvas></div>
+        ${(d.flags || []).length ? `<div class="card flag-red">⚠️ ${d.flags.join('. ')}</div>` : ''}
+      `
+      if (d.student_macros && d.school_avg_macros) {
+        new Chart(document.getElementById('macros'), {
+          type: 'bar',
+          data: {
+            labels: ['Calorías', 'Azúcar (g)', 'Grasa (g)', 'Sodio (mg)'],
+            datasets: [
+              { label: d.student_name, data: d.student_macros, backgroundColor: '#2b6cb0' },
+              { label: 'Promedio colegio', data: d.school_avg_macros, backgroundColor: '#a0aec0' },
+            ],
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+        })
+      }
+    }
+  </script>
+</body>
+</html>
