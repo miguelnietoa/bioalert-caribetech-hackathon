@@ -106,12 +106,17 @@ H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 
 ## Git flow
 
-- Trunk-based en `main`. **NO** feature branches durante el hackathon.
-- Antes de cada commit: `git pull --rebase origin main`.
-- Commits frecuentes (cada 30-60 min). Push apenas un cambio es estable.
-- **NO** `git push --force` (excepto Jose Maza en caso extremo, anunciando en grupo).
+- **Una branch por track**. Cada uno trabaja en su propia rama y abre PR a `main` cuando esté listo para integrar.
+  - Miguel  → `track-a-conversacional`
+  - Arcila  → `track-b-alertas`
+  - Maza    → `track-c-infra-data-web`
+- `main` solo recibe cambios vía PR mergeable + cambios de coordinación (plan, docs, infra compartida) por el owner correspondiente.
+- Antes de cada commit dentro de tu branch: `git fetch && git rebase origin/main` para mantenerte al día con la infra compartida.
+- Commits frecuentes (cada 30-60 min). Push apenas un cambio es estable — la branch remota es el backup.
+- **NO** `git push --force` salvo `--force-with-lease` sobre tu propia branch privada (nunca sobre `main`).
 - Mensajes convencionales: `feat:`, `fix:`, `chore:`, `docs:`, `wip:` (este último para cambios incompletos seguros).
 - **NUNCA** `Co-Authored-By:` en mensajes de commit. Preferencia del equipo.
+- **Integración a `main`:** cuando termines un bloque grande (ej. Jose Maza termina `lambdas/shared/*`), abrís PR, lo mergeás vos mismo si no rompe nada, y avisás en el canal para que los otros hagan rebase de su branch.
 
 ---
 
