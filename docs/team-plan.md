@@ -6,55 +6,55 @@
 
 | Track | Owner | Misión | Doc personal |
 |---|---|---|---|
-| **A — Conversacional + Producto** | **Miguel** | Agente WhatsApp (US-01, US-04, EXT-1, EXT-4, EXT-6) + caso "Diana y Mateo" + uplift en $ + pitch | [`plans/conversacional-y-producto.md`](plans/conversacional-y-producto.md) |
-| **B — Alertas** | **Dev 2** | Las 5 Lambdas de alertas y reportes (US-02, US-03, US-05, EXT-2, EXT-3 + EXT-5) | [`plans/alertas.md`](plans/alertas.md) |
-| **C — Infra + Data + Web** | **Dev 3** | AWS, RDS, `lambdas/shared/`, fixtures SQL, bootstrap nutrición con Claude, vistas web estáticas | [`plans/infra-data-web.md`](plans/infra-data-web.md) |
+| **A — Conversacional + Producto** | **Miguel Nieto** | Agente WhatsApp (US-01, US-04, EXT-1, EXT-4, EXT-6) + caso "Diana y Mateo" + uplift en $ + pitch | [`plans/2026-05-16-track-a-conversacional.md`](plans/2026-05-16-track-a-conversacional.md) |
+| **B — Alertas** | **Jose Arcila** | Las 5 Lambdas de alertas y reportes (US-02, US-03, US-05, EXT-2, EXT-3 + EXT-5) | [`plans/2026-05-16-track-b-alertas.md`](plans/2026-05-16-track-b-alertas.md) |
+| **C — Infra + Data + Web** | **Jose Maza** | AWS, RDS, `lambdas/shared/`, fixtures SQL, bootstrap nutrición con Claude, vistas web estáticas | [`plans/2026-05-16-track-c-infra-data-web.md`](plans/2026-05-16-track-c-infra-data-web.md) |
 
-Decisión clave: Miguel toma Conversacional + Producto porque (1) tiene todo el contexto cargado desde el setup, (2) la conversación está acoplada al storytelling "Diana y Mateo" del pitch, (3) eso libera 2 devs senior a especializarse.
+Decisión clave: Miguel Nieto toma Conversacional + Producto porque (1) tiene todo el contexto cargado desde el setup, (2) la conversación está acoplada al storytelling "Diana y Mateo" del pitch, (3) eso libera a los 2 Jose a especializarse.
 
 ---
 
-## Dependency graph (el cuello de botella es Dev 3)
+## Dependency graph (el cuello de botella es Jose Maza)
 
 ```
-H0─H1:  Dev 3 corre setup (npm install, bootstrap-ssm, serverless deploy)
-        Dev 2 hace opt-in al sandbox + escribe specs de fixtures local
+H0─H1:  Jose Maza corre setup (npm install, bootstrap-ssm, serverless deploy)
+        Jose Arcila hace opt-in al sandbox + escribe specs de fixtures local
         Miguel corre EDA del dataset (queries 02 y 03) → elige colegio piloto
 
-H1─H2:  Dev 3 aplica schema + corre ETL del reto → RDS poblada con tipos limpios
+H1─H2:  Jose Maza aplica schema + corre ETL del reto → RDS poblada con tipos limpios
         Miguel documenta caso "Diana y Mateo"
-        Dev 2 sigue spec local + lee docs de Anthropic SDK
+        Jose Arcila sigue spec local + lee docs de Anthropic SDK
 
-H2─H4:  Dev 3 escribe lambdas/shared/*  ← CRÍTICO: desbloquea a Miguel y Dev 2
+H2─H4:  Jose Maza escribe lambdas/shared/*  ← CRÍTICO: desbloquea a Miguel y Jose Arcila
         Miguel sigue con caso demo
-        Dev 2 sigue spec / patterns
+        Jose Arcila sigue spec / patterns
 
-H4─H7:  Dev 3: bootstrap-nutrition.ts → puebla bioalert.product_nutrition
+H4─H7:  Jose Maza: bootstrap-nutrition.ts → puebla bioalert.product_nutrition
         Miguel: arranca lambdas/conversation-handler/ (handler base + DynamoDB)
-        Dev 2: lambdas/allergen-polling/ (US-03, el más simple, valida patrón)
+        Jose Arcila: lambdas/allergen-polling/ (US-03, el más simple, valida patrón)
 
-H7─H10: Dev 3: fixtures SQL (parent_phone_map con teléfonos REALES del equipo,
+H7─H10: Jose Maza: fixtures SQL (parent_phone_map con teléfonos REALES del equipo,
                 allergens manuales, inventory simulado, cafeteria_admins)
         Miguel: tools 1-4
-        Dev 2: lambdas/absence-cron + lambdas/stock-cron
+        Jose Arcila: lambdas/absence-cron + lambdas/stock-cron
 
-H10─H14: Dev 3: web/nutrition-report/ (HTML + Chart.js)
+H10─H14: Jose Maza: web/nutrition-report/ (HTML + Chart.js)
          Miguel: tools 5-8 + EXT-1 lógica
-         Dev 2: lambdas/nutrition-weekly (EXT-2)
+         Jose Arcila: lambdas/nutrition-weekly (EXT-2)
 
-H14─H16: Dev 3: web/cafeteria-insights/
+H14─H16: Jose Maza: web/cafeteria-insights/
          Miguel: system prompt + EXT-4 + EXT-6 quick replies
-         Dev 2: lambdas/cafeteria-weekly + EXT-5 insight cruzado
+         Jose Arcila: lambdas/cafeteria-weekly + EXT-5 insight cruzado
 
 H16─H18: TODOS: integration test grupal + bug fixes + smoke tests E2E
 
-H18─H20: Dev 3: deploy de vistas a S3 + integración con Lambdas
+H18─H20: Jose Maza: deploy de vistas a S3 + integración con Lambdas
          Miguel: cálculo uplift + pitch outline
-         Dev 2: backup demo grabado + polish
+         Jose Arcila: backup demo grabado + polish
 
-H20─H22: Dev 3: monitoreo + logs limpios
+H20─H22: Jose Maza: monitoreo + logs limpios
          Miguel: dry-run #1 del pitch
-         Dev 2: soporte demo
+         Jose Arcila: soporte demo
 
 H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 ```
@@ -65,8 +65,8 @@ H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 
 | Hora | Qué pasa | Quién |
 |---|---|---|
-| **H+2** | Dev 3 anuncia "RDS up, ETL done, conteos cuadran" | todos saben que pueden conectar |
-| **H+4** | Dev 3 anuncia "lambdas/shared/* committed" | Miguel y Dev 2 desbloqueados |
+| **H+2** | Jose Maza anuncia "RDS up, ETL done, conteos cuadran" | todos saben que pueden conectar |
+| **H+4** | Jose Maza anuncia "lambdas/shared/* committed" | Miguel y Jose Arcila desbloqueados |
 | **H+8** | Standup rápido (15 min). Cada uno muestra qué corre | todos |
 | **H+12** | Integration test grupal (1 hora). Conv + Alertas + Vistas conectadas E2E | todos juntos |
 | **H+16** | Feature freeze. Nada nuevo, solo bugs + polish | todos |
@@ -79,21 +79,21 @@ H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 
 | Path | Dueño |
 |---|---|
-| `serverless.yml` | Dev 3 |
-| `package.json` | Dev 3 |
-| `tsconfig.json` | Dev 3 |
-| `.env.example` | Dev 3 |
-| `data/fixtures/*.sql` | Dev 3 |
-| `scripts/*` | Dev 3 |
-| `lambdas/shared/*` | Dev 3 |
+| `serverless.yml` | Jose Maza |
+| `package.json` | Jose Maza |
+| `tsconfig.json` | Jose Maza |
+| `.env.example` | Jose Maza |
+| `data/fixtures/*.sql` | Jose Maza |
+| `scripts/*` | Jose Maza |
+| `lambdas/shared/*` | Jose Maza |
 | `lambdas/conversation-handler/**` | Miguel |
-| `lambdas/allergen-polling/**` | Dev 2 |
-| `lambdas/absence-cron/**` | Dev 2 |
-| `lambdas/stock-cron/**` | Dev 2 |
-| `lambdas/nutrition-weekly/**` | Dev 2 |
-| `lambdas/cafeteria-weekly/**` | Dev 2 |
-| `web/nutrition-report/**` | Dev 3 |
-| `web/cafeteria-insights/**` | Dev 3 |
+| `lambdas/allergen-polling/**` | Jose Arcila |
+| `lambdas/absence-cron/**` | Jose Arcila |
+| `lambdas/stock-cron/**` | Jose Arcila |
+| `lambdas/nutrition-weekly/**` | Jose Arcila |
+| `lambdas/cafeteria-weekly/**` | Jose Arcila |
+| `web/nutrition-report/**` | Jose Maza |
+| `web/cafeteria-insights/**` | Jose Maza |
 | `analysis/queries/*` | leer todos, modificar Miguel |
 | `analysis/results/*` | Miguel |
 | `docs/plans/<tu-doc>.md` | tú mismo |
@@ -109,7 +109,7 @@ H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 - Trunk-based en `main`. **NO** feature branches durante el hackathon.
 - Antes de cada commit: `git pull --rebase origin main`.
 - Commits frecuentes (cada 30-60 min). Push apenas un cambio es estable.
-- **NO** `git push --force` (excepto Dev 3 en caso extremo, anunciando en grupo).
+- **NO** `git push --force` (excepto Jose Maza en caso extremo, anunciando en grupo).
 - Mensajes convencionales: `feat:`, `fix:`, `chore:`, `docs:`, `wip:` (este último para cambios incompletos seguros).
 - **NUNCA** `Co-Authored-By:` en mensajes de commit. Preferencia del equipo.
 
@@ -136,7 +136,7 @@ H22─H24: TODOS: 2-3 ensayos del pitch + setup demo en vivo
 - Kapso Sandbox: gratis
 - **Total esperado del hackathon: <$10**
 
-Stop button: `npm run remove` desinstala todo el stack y los datos se borran (DeletionPolicy: Delete en la RDS). Hacerlo solo POST-pitch y solo Dev 3.
+Stop button: `npm run remove` desinstala todo el stack y los datos se borran (DeletionPolicy: Delete en la RDS). Hacerlo solo POST-pitch y solo Jose Maza.
 
 ---
 

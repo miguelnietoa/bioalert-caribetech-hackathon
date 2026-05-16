@@ -1,10 +1,10 @@
 # Track C — Infra + Data + Web — Implementation Plan
 
-> **For Dev 3:** Seguí este plan task-por-task. Los otros 2 devs te necesitan **vivo** hasta H+4 (cuando `lambdas/shared/*` esté commiteado). Después ya corren en paralelo. Si te bloqueás, avisá en el canal del equipo en <15 min.
+> **For Jose Maza:** Seguí este plan task-por-task. Los otros 2 devs (Miguel y Jose Arcila) te necesitan **vivo** hasta H+4 (cuando `lambdas/shared/*` esté commiteado). Después ya corren en paralelo. Si te bloqueás, avisá en el canal del equipo en <15 min.
 >
 > Referencia transversal: [`../team-plan.md`](../team-plan.md), [`../db-schema.md`](../db-schema.md), [`../../CLAUDE.md`](../../CLAUDE.md).
 
-**Goal:** Aprovisionar toda la infra AWS (RDS, DynamoDB, SSM), poblar la DB con el dataset del reto + fixtures + nutrición vía Claude, escribir las utilidades compartidas que consumen Miguel y Dev 2, y publicar 2 vistas web estáticas en S3+CloudFront.
+**Goal:** Aprovisionar toda la infra AWS (RDS, DynamoDB, SSM), poblar la DB con el dataset del reto + fixtures + nutrición vía Claude, escribir las utilidades compartidas que consumen Miguel y Jose Arcila, y publicar 2 vistas web estáticas en S3+CloudFront.
 
 **Architecture:** Stack único en Serverless Framework v4. Postgres en RDS con dos schemas: `reto` (clon tipado del reto) y `bioalert` (fixtures nuestros). DynamoDB para sesiones del bot. Las Lambdas se conectan vía `pg.Pool` cacheado a nivel módulo (sin RDS Proxy en H0 — opcional al final). Vistas web son HTML+Chart.js con data pre-generada en JSON y subida por las Lambdas semanales a S3.
 
@@ -611,7 +611,7 @@ git push
 
 **Step 4: ANUNCIO AL EQUIPO (CRÍTICO)**
 
-> ✅ `lambdas/shared/*` listo (db, ssm, whatsapp, claude, dynamo, logger, types). Miguel y Dev 2 pueden arrancar sus Lambdas.
+> ✅ `lambdas/shared/*` listo (db, ssm, whatsapp, claude, dynamo, logger, types). Miguel y Jose Arcila pueden arrancar sus Lambdas.
 
 ---
 
@@ -760,7 +760,7 @@ git push
 
 **Step 5: ANUNCIO**
 
-> ✅ `bioalert.product_nutrition` poblada. Dev 2 puede empezar EXT-2 (nutrition-weekly).
+> ✅ `bioalert.product_nutrition` poblada. Jose Arcila puede empezar EXT-2 (nutrition-weekly).
 
 ---
 
@@ -884,7 +884,7 @@ git push
 
 HTML+JS puro con Chart.js. Una sola página, mobile-first. Recibe data via `?student=<id>` query param y fetch a `https://<bucket>/data/<id>.json`.
 
-Template mínimo (Dev 3 lo afina visualmente):
+Template mínimo (Jose Maza lo afina visualmente):
 
 ```html
 <!DOCTYPE html>
@@ -998,10 +998,10 @@ git push
 
 A partir de H+12 tu rol es **soporte de integración y polish**:
 
-- **Cuando Dev 2 termine `nutrition-weekly`:** lo coordinás con vos para que el JSON suba a `s3://bioalert-web-hackathon-.../data/<student>.json` y el HTML lo levante.
-- **Cuando Dev 2 termine `cafeteria-weekly`:** idem para `s3://.../insights/<nit_colegio>.json`.
+- **Cuando Jose Arcila termine `nutrition-weekly`:** lo coordinás con vos para que el JSON suba a `s3://bioalert-web-hackathon-.../data/<student>.json` y el HTML lo levante.
+- **Cuando Jose Arcila termine `cafeteria-weekly`:** idem para `s3://.../insights/<nit_colegio>.json`.
 - **Monitoreo de logs:** `npx serverless logs -f <function-name> --tail` para detectar errores temprano.
-- **Bug fixes** en shared/ si Miguel o Dev 2 detectan algo.
+- **Bug fixes** en shared/ si Miguel o Jose Arcila detectan algo.
 - **Polish visual de las vistas** — los Devs son senior, no diseñadores. Hacelo mobile-friendly y elegante con Chart.js.
 
 ---

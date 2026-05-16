@@ -176,13 +176,13 @@ Las tools del agente queryean **directo contra `hackaton_*`** y joinean con `bio
 
 | Rol | Owner | Plan detallado |
 |---|---|---|
-| **Track A — Conversacional + Producto** | Miguel | [`docs/plans/2026-05-16-track-a-conversacional.md`](docs/plans/2026-05-16-track-a-conversacional.md) |
-| **Track B — Alertas + Reportes** | Dev 2 | [`docs/plans/2026-05-16-track-b-alertas.md`](docs/plans/2026-05-16-track-b-alertas.md) |
-| **Track C — Infra + Data + Web** | Dev 3 | [`docs/plans/2026-05-16-track-c-infra-data-web.md`](docs/plans/2026-05-16-track-c-infra-data-web.md) |
+| **Track A — Conversacional + Producto** | **Miguel Nieto** | [`docs/plans/2026-05-16-track-a-conversacional.md`](docs/plans/2026-05-16-track-a-conversacional.md) |
+| **Track B — Alertas + Reportes** | **Jose Arcila** | [`docs/plans/2026-05-16-track-b-alertas.md`](docs/plans/2026-05-16-track-b-alertas.md) |
+| **Track C — Infra + Data + Web** | **Jose Maza** | [`docs/plans/2026-05-16-track-c-infra-data-web.md`](docs/plans/2026-05-16-track-c-infra-data-web.md) |
 
 Overview de dependencias, sync checkpoints (H+2, H+4, H+8, H+12, H+16, H+20, H+22) y reglas anti-conflicto en [`docs/team-plan.md`](docs/team-plan.md).
 
-Camino crítico: Dev 3 desbloquea a Miguel y Dev 2. Mientras Dev 3 arma infra (H0-H4), Miguel hace EDA + caso demo y Dev 2 hace opt-in + specs.
+Camino crítico: Jose Maza desbloquea a Miguel y Jose Arcila. Mientras Jose Maza arma infra (H0-H4), Miguel hace EDA + caso demo y Jose Arcila hace opt-in + specs.
 
 ---
 
