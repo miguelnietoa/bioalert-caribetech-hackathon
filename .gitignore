@@ -20,11 +20,15 @@ dist/
 build/
 out/
 .next/
+.esbuild/
 *.tsbuildinfo
+
+# TS / Serverless Framework
+.serverless/
+.serverless_plugins/
 
 # AWS
 .aws-sam/
-.serverless/
 samconfig.toml
 cdk.out/
 .cdk.staging/
@@ -54,13 +58,6 @@ Thumbs.db
 # Logs
 *.log
 logs/
-
-# Data large / generated
-data/nutrition-source/*.csv
-data/nutrition-source/*.json
-!data/nutrition-source/README.md
-data/*.csv
-!data/nutrition-mapped.csv
 
 # Local-only fixture exports
 *.dump

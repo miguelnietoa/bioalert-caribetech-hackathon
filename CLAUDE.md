@@ -9,7 +9,7 @@
 - `biofood-hackathon-plan.md` (raíz) — plan completo de 24h del equipo. Contexto, extensiones EXT-1..EXT-6, cronograma, riesgos.
 - `docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf` — PRD oficial de Pedro Noguera (CEO Biofood). **VERDAD técnica no negociable.**
 
-Cuando haya conflicto: PRD gana en stack/arquitectura, plan gana en alcance (porque agrega extensiones para cubrir los 3 pilares del brief público).
+Cuando haya conflicto: PRD gana en stack/arquitectura, plan gana en alcance (porque agrega extensiones para cubrir los 3 pilares del brief público). **Desviaciones explícitas del PRD** (justificadas por velocidad de hackathon o realidad operativa) se documentan en §2.1 abajo.
 
 ---
 
@@ -19,24 +19,37 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 
 ---
 
-## 2. Stack no negociable (del PRD §04)
+## 2. Stack (del PRD §04 + decisiones lockeadas)
 
-| Capa | Tecnología |
-|---|---|
-| Runtime | **Node.js 20** |
-| Backend | Lambdas (handler estilo Express) |
-| API entrante | API Gateway (HTTP API) |
-| BD | PostgreSQL (Biofood Global DB existente — solo lectura sobre tablas existentes) |
-| Connection pool | **RDS Proxy** — SQL crudo, **sin ORM** |
-| Motor IA | Claude API — modelo `claude-sonnet-4-20250514` (del PRD literal) |
-| Canal | WhatsApp Business API (Meta Cloud API) |
-| Cron / alertas | EventBridge → Lambda |
-| Estado conversacional | DynamoDB (`conversations`, TTL 1h) |
-| Secrets | SSM Parameter Store |
-| Infra | AWS Serverless. **Sin microservicios.** |
-| Vistas estáticas (extensiones) | S3 + CloudFront, HTML/JS puro o Next.js exportado estático |
+| Capa | Tecnología | Origen |
+|---|---|---|
+| Runtime | **Node.js 20** | PRD |
+| Lenguaje | **TypeScript** (ES modules, target ES2022) | decisión equipo |
+| Backend | Lambdas (handler estilo Express) | PRD |
+| Deploy / IaC | **Serverless Framework v4** (`serverless.yml`) con esbuild built-in para TS | decisión equipo |
+| API entrante | API Gateway (HTTP API) | PRD |
+| BD | PostgreSQL — Biofood Global DB existente (acceso confirmado, solo lectura sobre tablas existentes) | PRD |
+| Connection pool | **RDS Proxy** — SQL crudo, **sin ORM** | PRD |
+| Motor IA (conversacional) | **Claude Sonnet 4.6** — `claude-sonnet-4-6` | desviación PRD (ver §2.1) |
+| Motor IA (batch / crons) | **Claude Haiku 4.5** — `claude-haiku-4-5-20251001` | decisión equipo |
+| Canal | **Kapso Sandbox** durante el hackathon (TypeScript SDK nativo, interactive messages soportados, webhooks con HMAC security). **Twilio WhatsApp Sandbox** como fallback si Kapso da fricción en H0-H3. El wrapper `lambdas/shared/whatsapp.ts` abstrae el canal para que el switch sea barato y para migrar a Meta Cloud API post-hackathon sin tocar las Lambdas. | desviación PRD (ver §2.1) |
+| Cron / alertas | EventBridge → Lambda | PRD |
+| Estado conversacional | DynamoDB (`conversations`, TTL 1h) | PRD |
+| Secrets | SSM Parameter Store | PRD |
+| Infra | AWS Serverless. **Sin microservicios.** Cuenta nueva de AWS Free Tier (sandbox personal de Miguel) | PRD + decisión equipo |
+| Vistas estáticas (extensiones) | S3 + CloudFront, HTML/JS puro o Next.js exportado estático | plan |
 
-**Prohibido por el PRD:** tocar el frontend Angular existente, entrenar modelos ML, multi-tenant (1 colegio piloto hardcodeado), flujo de registro de usuarios (el número de WhatsApp ES la identidad), históricos >30 días, B2B para proveedores.
+### 2.1. Desviaciones del PRD (justificadas)
+
+| Decisión PRD | Qué hacemos | Por qué |
+|---|---|---|
+| `claude-sonnet-4-20250514` | `claude-sonnet-4-6` para conversación, `claude-haiku-4-5-20251001` para crons | El modelo del PRD está **deprecated y se retira 2026-06-15** (un mes post-hackathon). Sonnet 4.6 es estrictamente superior en tool calling al mismo precio ($3/$15 por MTok). Haiku 4.5 corta el costo de los crons a un tercio ($1/$5). |
+| WhatsApp Business API (Meta Cloud API directa) | **Kapso Sandbox** (primario) / Twilio Sandbox (fallback) | Meta puede tardar horas o días en aprobar incluso sandbox. Kapso y Twilio son instantáneos. Kapso gana porque tiene SDK TypeScript nativo, soporte explícito de interactive messages (necesarios para EXT-6) y webhooks con HMAC. La abstracción en `lambdas/shared/whatsapp.ts` permite migrar a Meta directo post-hackathon. |
+| Tabla nutricional cruzada manualmente con USDA/ICBF | Bootstrap script que llama a Claude una sola vez para estimar valores nutricionales de cada producto del catálogo Biofood y persiste en `product_nutrition` | Cruzar manualmente USDA/ICBF con productos colombianos era 4h de Dev 4 sin valor diferencial. Claude estima con calidad razonable para el demo. |
+
+### 2.2. Prohibido por el PRD — respetar literal
+
+Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (1 colegio piloto hardcodeado), flujo de registro de usuarios (el número de WhatsApp ES la identidad), históricos >30 días, B2B para proveedores.
 
 ---
 
@@ -46,7 +59,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 
 | ID | Qué | Trigger | Latencia objetivo |
 |---|---|---|---|
-| **US-01** | "¿Qué comió mi hijo hoy?" conversacional | Webhook entrante WhatsApp | <4s |
+| **US-01** | "¿Qué comió mi hijo hoy?" conversacional | Webhook entrante WhatsApp (Kapso) | <4s |
 | **US-02** | Alerta proactiva si no hay consumo al mediodía | EventBridge Cron 12:00 PM Colombia | <2 min para todos |
 | **US-03** | Alerta inmediata de alérgeno | Polling Lambda cada 60s sobre `transactions` | <30s desde transacción |
 | **US-04** | Proyección de agotamiento de saldo | Mensaje conversacional del padre | ±2 días error |
@@ -61,7 +74,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 | **EXT-3** | Reporte semanal lunes 7AM al admin de cafetería con benchmark nacional + vista web estática | Pilar 3 (analítica) |
 | **EXT-4** | Explicabilidad ("por qué te aviso esto") en TODA alerta y respuesta — vive en el system prompt | UX diferencial |
 | **EXT-5** | Insight cruzado padre↔cafetería: agregamos señales (preguntas, opciones elegidas, alertas) y las entregamos a la cafetería | "Wow" del demo |
-| **EXT-6** | Quick replies de WhatsApp (interactive messages con botones) | Pulido de producto |
+| **EXT-6** | Quick replies de WhatsApp (interactive messages con botones — Kapso `send-buttons`) | Pulido de producto |
 
 ### Tools del agente conversacional (Claude API — plan §5)
 
@@ -91,7 +104,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 - `parent_phone_map` (phone_e164, student_id) — mínimo 10 registros
 - `cafeteria_admins` (phone_e164, school_id)
 - `inventory` (product_id, school_id, current_stock, minimum_stock)
-- `product_nutrition` (product_id, calories_100g, sugar_g, fat_g, protein_g, sodium_mg) — **nuestra extensión para EXT-2/EXT-3, no está en el PRD**
+- `product_nutrition` (product_id, calories_100g, sugar_g, fat_g, protein_g, sodium_mg) — **nuestra extensión para EXT-2/EXT-3, no está en el PRD. Poblada por un bootstrap script que llama a Claude una sola vez con el catálogo de productos del piloto.**
 
 ### En DynamoDB
 
@@ -101,14 +114,15 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 
 ## 5. Convenciones de código
 
-- **Node.js 20**, **JavaScript** (no TypeScript). Decisión por velocidad de hackathon. *Pendiente confirmación final del equipo — si se acuerda TS antes de H3, se actualiza esta sección.*
-- **ES modules** (`import/export`, `"type": "module"` en cada `package.json`).
+- **Node.js 20**, **TypeScript** (`"module": "ESNext"`, `"target": "ES2022"`, `"moduleResolution": "Bundler"`). Lambdas se empaquetan con esbuild a través de Serverless Framework v4.
+- **ES modules** (`import/export`). Un solo `package.json` a nivel raíz para velocidad de hackathon (monorepo si surge necesidad).
 - **`async/await`** en todo. Nada de callbacks ni `.then()` encadenado.
-- **SQL crudo** con parámetros nombrados, **sin ORM**. Las queries viven en archivos `.sql` separados de la lógica JS y se cargan con `fs.readFileSync` al cold start. Patrón: `lambdas/<lambda>/queries/*.sql` + `lambdas/<lambda>/index.js` los importa.
-- Una Lambda = una carpeta = un `index.js` + dependencias locales. `lambdas/shared/` para utilidades compartidas (db, whatsapp, nutrition).
-- Variables de entorno cargadas desde SSM Parameter Store en el handler, cacheadas a nivel módulo entre invocaciones.
+- **SQL crudo** con parámetros nombrados, **sin ORM**. Las queries viven en archivos `.sql` separados de la lógica TS y se cargan con `fs.readFileSync` al cold start. Patrón: `lambdas/<lambda>/queries/*.sql` + `lambdas/<lambda>/index.ts` los importa.
+- Una Lambda = una carpeta = un `index.ts` + dependencias locales. `lambdas/shared/` para utilidades compartidas (db, whatsapp, claude, dynamo, ssm, types, logger).
+- Variables de entorno cargadas desde SSM Parameter Store en el handler, cacheadas a nivel módulo entre invocaciones (cold start friendly).
 - Logs estructurados (`console.log(JSON.stringify({...}))`) — CloudWatch Insights friendly.
-- **Sin tests unitarios formales** en el hackathon (no hay tiempo). Smoke tests manuales con `node --test` solo para utilidades críticas de `lambdas/shared/`.
+- **Sin tests unitarios formales** en el hackathon (no hay tiempo). Smoke tests manuales con `node --test` solo para utilidades críticas de `lambdas/shared/` si surge necesidad real.
+- Tipos compartidos en `lambdas/shared/types.ts`. Cero `any` salvo cuando interactuamos con SDKs sin tipos.
 - Comentarios solo cuando el "por qué" no sea obvio del código.
 
 ---
@@ -127,6 +141,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 - Modificaciones a tablas existentes (solo lectura)
 - Tests unitarios formales con coverage (no hay tiempo)
 - B2B para proveedores
+- Cruzar manualmente USDA/ICBF con catálogo Biofood (Claude estima)
 
 ---
 
@@ -135,29 +150,30 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 > Actualizar al cierre de cada fase. Estados: `not started` / `in progress` / `done` / `blocked`.
 
 ### Infra
-- AWS account + IAM roles: **not started**
-- RDS Proxy + connection a Biofood Global DB: **not started**
+- AWS account (Free Tier, sandbox personal Miguel): **not started**
+- Serverless Framework v4 setup + serverless.yml base: **not started**
+- RDS Proxy + conexión a Biofood Global DB: **not started** (acceso confirmado por equipo)
 - DynamoDB `conversations`: **not started**
-- API Gateway (HTTP API) webhook: **not started**
+- API Gateway (HTTP API) webhook para Kapso: **not started**
 - EventBridge Crons (12PM, 7AM, dom 6PM, lun 7AM): **not started**
-- SSM Parameter Store (secrets): **not started**
+- SSM Parameter Store (secrets: Claude API key, Kapso API key + webhook secret, DB creds): **not started**
 - S3 + CloudFront para vistas estáticas: **not started**
 
 ### Canal
-- WhatsApp Business API sandbox + número activo: **not started** (bloqueador crítico, dev dedicado H0-H3 del PRD)
+- **Kapso Sandbox** activado + webhook configurado + opt-in del equipo + plan de fallback Twilio: **not started** (ya no es bloqueador crítico porque ambos sandboxes son instantáneos)
 
 ### Lambdas
-- `conversation-handler` (US-01, EXT-1, tools 1-8): **not started**
+- `conversation-handler` (US-01, US-04, EXT-1, tools 1-8, modelo Sonnet 4.6): **not started**
 - `allergen-polling` (US-03): **not started**
 - `absence-cron` (US-02): **not started**
 - `stock-cron` (US-05): **not started**
 - `nutrition-weekly` (EXT-2): **not started**
 - `cafeteria-weekly` (EXT-3 + EXT-5): **not started**
-- `shared/` (db, whatsapp, nutrition helpers): **not started**
+- `shared/` (db, whatsapp[Kapso], claude, dynamo, ssm, types, logger): **not started**
 
 ### Data
 - Fixtures SQL (parent_phone_map, student_allergens, product_allergens, inventory, cafeteria_admins): **not started**
-- Tabla nutricional cruzada (USDA/ICBF → catálogo Biofood): **not started**
+- Bootstrap nutrición: script que llama a Claude una vez con catálogo de productos del piloto → genera `product_nutrition.sql`: **not started**
 
 ### Web (extensiones)
 - Vista nutrition-report (EXT-2): **not started**
@@ -186,16 +202,26 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 
 ---
 
-## 9. Flujo de trabajo en cada sesión
+## 9. Gotchas operacionales del hackathon
+
+- **Kapso Sandbox:** TypeScript SDK nativo, soporta `send-text`, `send-buttons`, `send-lists`, `send-image`, etc. Webhooks de entrada con HMAC security. Es un número compartido — confirmar en H0 el flujo exacto de opt-in (qué tiene que enviar el padre antes de poder recibir) y si hay rate limit o session window. Si surgen sorpresas, fallback a Twilio.
+- **Twilio Sandbox (fallback):** opt-in con `join <code>`, sesión expira 3 días, rate limit 1 msg/3s, NO documenta soporte sandbox de interactive messages → si llegamos acá, EXT-6 puede degradar a texto + numeritos ("Responde 1, 2 o 3"). Colombia no está restringido.
+- **AWS Free Tier:** RDS Proxy NO está en free tier (~$0.72 total las 24h). Lambda + DynamoDB + API Gateway + CloudWatch sí entran. Tener una tarjeta a mano por si AWS la pide.
+- **Serverless Framework v4 licensing:** gratis para hackathon. Si Biofood adopta post-evento y tiene >$2M USD ingresos, requiere licencia paga.
+- **Claude Sonnet 4 deprecation:** el PRD pidió `claude-sonnet-4-20250514` que se retira **2026-06-15**. Si Pedro pregunta por qué usamos otro modelo, la respuesta es esa.
+
+---
+
+## 10. Flujo de trabajo en cada sesión
 
 1. Lee este `CLAUDE.md` completo. Si una sección dice "not started" no asumas que ya existe.
 2. Lee la sección 7 (Estado actual) y decide en qué fase del cronograma del plan estamos.
 3. Antes de codear: revisa los `README.md` de las subcarpetas relevantes — explican qué va dónde.
 4. Al terminar una fase: actualiza la sección 7 con lo que cambió. Commit con mensaje convencional (`feat:`, `chore:`, `fix:`, `docs:`).
-5. Si tomas una decisión técnica que afecta a otros, déjala documentada en el archivo correspondiente o aquí.
+5. Si tomas una decisión técnica que afecta a otros, documéntala en §2.1 (si desvía del PRD) o en el README de la carpeta correspondiente.
 
 ---
 
-## 10. Una frase para defender el proyecto (apéndice del plan)
+## 11. Una frase para defender el proyecto (apéndice del plan)
 
 > *"BioAlert+ activa los 10 años de data transaccional de Biofood vía un agente WhatsApp que cumple los 3 pilares del reto: recargas más altas para padres con justificación nutricional personalizada, reportes nutricionales semanales con comparación con compañeros, e inteligencia accionable para cafeterías con benchmark nacional. Construido en el stack que Pedro Noguera definió en su PRD. Aplicado a los 90 colegios de Biofood, representa entre $1.2B y $2.4B COP adicionales en recargas anuales."*
