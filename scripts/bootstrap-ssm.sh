@@ -51,6 +51,7 @@ put_secure "/bioalert/$STAGE/anthropic/api-key"    "REPLACE_ME" "Anthropic API k
 put_secure "/bioalert/$STAGE/kapso/api-key"        "REPLACE_ME" "Kapso API key"
 put_secure "/bioalert/$STAGE/kapso/webhook-secret" "REPLACE_ME" "Kapso webhook HMAC secret"
 put_secure "/bioalert/$STAGE/kapso/sandbox-number" "REPLACE_ME" "Kapso WhatsApp sandbox number (E.164)"
+put_secure "/bioalert/$STAGE/kapso/phone-number-id" "REPLACE_ME" "Kapso Meta phone_number_id (sandbox)"
 
 echo
 echo "Listos los SSM parameters. Para meter los valores reales de Kapso/Anthropic:"
