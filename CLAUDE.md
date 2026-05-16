@@ -52,6 +52,7 @@ BioAlert+ es un agente de WhatsApp para padres y administradores de cafeterías 
 | `claude-sonnet-4-20250514` | `claude-sonnet-4-6` para conversación, `claude-haiku-4-5-20251001` para crons | El modelo del PRD está **deprecated y se retira 2026-06-15** (un mes post-hackathon). Sonnet 4.6 es estrictamente superior en tool calling al mismo precio ($3/$15 por MTok). Haiku 4.5 corta el costo de los crons a un tercio ($1/$5). |
 | WhatsApp Business API (Meta Cloud API directa) | **Kapso Sandbox** (primario) / Twilio Sandbox (fallback) | Meta puede tardar horas o días en aprobar incluso sandbox. Kapso y Twilio son instantáneos. Kapso gana porque tiene SDK TypeScript nativo, soporte explícito de interactive messages (necesarios para EXT-6) y webhooks con HMAC. La abstracción en `lambdas/shared/whatsapp.ts` permite migrar a Meta directo post-hackathon. |
 | Tabla nutricional cruzada manualmente con USDA/ICBF | Bootstrap script que llama a Claude una sola vez para estimar valores nutricionales de cada producto del catálogo Biofood y persiste en `product_nutrition` | Cruzar manualmente USDA/ICBF con productos colombianos era 4h de Dev 4 sin valor diferencial. Claude estima con calidad razonable para el demo. |
+| Modelo de datos relacional (`students`, `transactions`, `products`, `inventory`...) | Adaptación al schema real del reto: dos tablas planas (`hackaton_ventas`, `hackaton_recargas`) + fixtures `bioalert_*` en el mismo schema | El reto no expone schema relacional. `usuario_identificacion` reemplaza a `students.id`, `nombre_producto` reemplaza a `products.id`, balance se calcula on-the-fly. **`grade` no existe → EXT-2 peer compare se degrada a "compañeros del mismo colegio".** Detalle en `docs/db-schema.md`. |
 
 ### 2.2. Prohibido por el PRD — respetar literal
 
@@ -97,24 +98,43 @@ Tocar el frontend Angular existente, entrenar modelos ML propios, multi-tenant (
 
 ## 4. Modelo de datos
 
-### Tablas existentes en Biofood (solo lectura — confirmar nombres reales al conectar)
+> El PRD §05 lista tablas que **NO existen** en el reto. Inspección completa de la DB real en `docs/db-schema.md`. Resumen:
 
-- `students` (id, name, grade, school_id, balance)
-- `transactions` (id, student_id, product_id, amount, created_at)
-- `products` (id, name, category, price)
+### Tablas reales del reto (solo lectura, schema `public`)
 
-### Tablas nuevas a precargar como fixtures (BLOQUEADOR H0-H2 del PRD)
+- **`hackaton_ventas`** (4.26M filas) — denormalizada, todo `text`. Campos clave: `usuario_identificacion`, `nombre_estudiante`, `fecha::text`, `cantidad::text`, `precio::text`, `nombre_producto`, `identificacion_padre`, `nombre_padre`, `colegio`, `nit_colegio`.
+- **`hackaton_recargas`** (305k filas) — tipos limpios. `id bigint PK`, `fecha date`, `valor numeric`, mismas dimensiones de identificación. `identificacion_padre` NULL ≈80% de los casos.
 
-- `student_allergens` (student_id, allergen_name) — mínimo 3 estudiantes con alergias
-- `product_allergens` (product_id, allergen_name) — mínimo 5 productos
-- `parent_phone_map` (phone_e164, student_id) — mínimo 10 registros
-- `cafeteria_admins` (phone_e164, school_id)
-- `inventory` (product_id, school_id, current_stock, minimum_stock)
-- `product_nutrition` (product_id, calories_100g, sugar_g, fat_g, protein_g, sodium_mg) — **nuestra extensión para EXT-2/EXT-3, no está en el PRD. Poblada por un bootstrap script que llama a Claude una sola vez con el catálogo de productos del piloto.**
+Rango temporal: ventas 2024-01-08 → 2026-05-29 (futuro); recargas 2024-01-07 → 2026-05-15. **47 colegios, 19.2k estudiantes, 11.9k padres, 6.7k productos distintos** (con duplicados — ver gotchas en `docs/db-schema.md` §4).
+
+### Permisos del usuario `hackathon_dev`
+
+- ✅ `CREATE` en schema `public` → **podemos crear nuestras tablas en la misma DB**, sin RDS extra
+- ✅ `SELECT` sobre `hackaton_*`
+- ❌ `INSERT/UPDATE/DELETE` sobre `hackaton_*`
+- ❌ `CREATE DATABASE`
+
+### Tablas nuestras (prefijo `bioalert_*`, schema `public`, BLOQUEADOR H0-H2)
+
+```
+bioalert_parent_phone_map  (identificacion_padre PK, phone_e164)
+bioalert_cafeteria_admins  (phone_e164 PK, nit_colegio)
+bioalert_student_allergens (usuario_identificacion, allergen_name)
+bioalert_product_allergens (nombre_producto, allergen_name)
+bioalert_inventory         (nombre_producto, nit_colegio, current_stock, minimum_stock)
+bioalert_product_nutrition (nombre_producto PK, canonical_name, calories_100g, sugar_g,
+                            fat_g, protein_g, sodium_mg, estimated_by, estimated_at)
+```
+
+`bioalert_product_nutrition` se puebla con un bootstrap script que llama a Claude (`claude-haiku-4-5`) sobre los **top productos del colegio piloto** (~50-150), NO los 6,783 globales. El script también devuelve `canonical_name` para consolidar variantes ortográficas (ej. siete formas distintas de "dedito de queso").
 
 ### En DynamoDB
 
-- `conversations` (phone_e164, session_json, updated_at) — TTL 1h
+- `bioalert_conversations` (phone_e164, session_json, updated_at) — TTL 1h
+
+### Cómo las Lambdas hablan con la realidad
+
+Las tools del agente queryean **directo contra `hackaton_*`** y joinean con `bioalert_*` para fixtures (alérgenos, teléfonos, nutrición). El balance proyectado de US-04 se computa como `SUM(recargas.valor) - SUM(ventas.cantidad::numeric * ventas.precio::numeric)` por `usuario_identificacion`. EXT-2 "comparación con compañeros de grado" se degrada a **"compañeros del mismo colegio"** porque no hay columna `grade`. Detalles y queries en `docs/db-schema.md` y `analysis/queries/`.
 
 ---
 
