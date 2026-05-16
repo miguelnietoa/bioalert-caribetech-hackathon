@@ -21,7 +21,7 @@ RDS_PASSWORD=$(aws ssm get-parameter \
   --profile "$AWS_PROFILE" --region "$AWS_REGION")
 
 echo "→ Conectando a $RDS_HOST..."
-PGPASSWORD="$RDS_PASSWORD" psql \
+PGPASSWORD="$RDS_PASSWORD" PGSSLMODE=require psql \
   -h "$RDS_HOST" -p 5432 -U bioalert_app -d bioalert \
   -v ON_ERROR_STOP=1 \
   -f data/fixtures/00-schema.sql

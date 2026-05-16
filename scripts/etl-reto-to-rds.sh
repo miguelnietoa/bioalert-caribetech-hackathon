@@ -41,10 +41,10 @@ DST_DB="bioalert"
 DST_USER="bioalert_app"
 
 echo "→ Verificando conexión RDS destino..."
-PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -tAc "SELECT 1" >/dev/null
+PGSSLMODE=require PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -tAc "SELECT 1" >/dev/null
 
 echo "→ TRUNCATE tablas destino (idempotencia)..."
-PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
+PGSSLMODE=require PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
   -c "TRUNCATE reto.ventas RESTART IDENTITY; TRUNCATE reto.recargas RESTART IDENTITY;"
 
 echo "→ ETL hackaton_ventas → reto.ventas (~4.26M filas, esto va a tardar)..."
@@ -55,15 +55,17 @@ time PGPASSWORD="$SRC_PASSWORD" psql -h "$SRC_HOST" -U "$SRC_USER" -d "$SRC_DB" 
           nombre_estudiante,
           fecha::date,
           cantidad::int,
-          precio::numeric,
+          LEAST(GREATEST(NULLIF(precio, '')::numeric, 0), 9999999999.99) AS precio,
           nombre_producto,
           NULLIF(identificacion_padre, '') AS identificacion_padre,
           NULLIF(nombre_padre, '')         AS nombre_padre,
           colegio,
           nit_colegio
         FROM hackaton_ventas
+        WHERE precio ~ '^[0-9]+(\.[0-9]+)?$'
+          AND NULLIF(precio, '')::numeric < 10000000000
       ) TO STDOUT WITH (FORMAT csv)" \
-  | PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
+  | PGSSLMODE=require PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
       -c "COPY reto.ventas (
             usuario_identificacion,
             nombre_estudiante,
@@ -91,7 +93,7 @@ time PGPASSWORD="$SRC_PASSWORD" psql -h "$SRC_HOST" -U "$SRC_USER" -d "$SRC_DB" 
           nit_colegio
         FROM hackaton_recargas
       ) TO STDOUT WITH (FORMAT csv)" \
-  | PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
+  | PGSSLMODE=require PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
       -c "COPY reto.recargas (
             usuario_identificacion,
             nombre_estudiante,
@@ -104,7 +106,7 @@ time PGPASSWORD="$SRC_PASSWORD" psql -h "$SRC_HOST" -U "$SRC_USER" -d "$SRC_DB" 
           ) FROM STDIN WITH (FORMAT csv)"
 
 echo "→ Verificación de conteos..."
-PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
+PGSSLMODE=require PGPASSWORD="$DST_PASSWORD" psql -h "$DST_HOST" -U "$DST_USER" -d "$DST_DB" -v ON_ERROR_STOP=1 \
   -c "SELECT 'reto.ventas' AS tabla, COUNT(*) AS filas FROM reto.ventas
       UNION ALL
       SELECT 'reto.recargas', COUNT(*) FROM reto.recargas;"
