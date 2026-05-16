@@ -26,6 +26,15 @@ provider:
             - dynamodb:DeleteItem
             - dynamodb:Query
           Resource: 'arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/bioalert-conversations-${self:provider.stage}'
+        - Effect: Allow
+          Action:
+            - ssm:PutParameter
+            - ssm:GetParameter
+          Resource: 'arn:aws:ssm:${aws:region}:${aws:accountId}:parameter/bioalert/*/cursors/*'
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource: 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/data/*'
 
 build:
   esbuild:
@@ -40,7 +49,49 @@ build:
 
 # Funciones se van agregando incrementalmente.
 # Vacío al inicio: el primer deploy solo crea la infra (RDS, DynamoDB, SSM).
-functions: {}
+functions:
+  allergen-polling:
+    handler: lambdas/allergen-polling/index.handler
+    timeout: 60
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+    events:
+      - schedule: rate(1 minute)
+  absence-cron:
+    handler: lambdas/absence-cron/index.handler
+    timeout: 120
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+      NIT_PILOTO: '900000680'
+    events:
+      - schedule: cron(0 17 ? * MON-FRI *)   # 12 PM Colombia = 17 UTC
+  stock-cron:
+    handler: lambdas/stock-cron/index.handler
+    timeout: 60
+    memorySize: 512
+    environment: { STAGE: ${self:provider.stage} }
+    events:
+      - schedule: cron(0 12 ? * * *)   # 7 AM Colombia
+  nutrition-weekly:
+    handler: lambdas/nutrition-weekly/index.handler
+    timeout: 300
+    memorySize: 1024
+    environment:
+      STAGE: ${self:provider.stage}
+      WEB_BUCKET: bioalert-web-${self:provider.stage}-${aws:accountId}
+    events:
+      - schedule: cron(0 23 ? * SUN *)   # Dom 6 PM Colombia
+  cafeteria-weekly:
+    handler: lambdas/cafeteria-weekly/index.handler
+    timeout: 300
+    memorySize: 1024
+    environment:
+      STAGE: ${self:provider.stage}
+      WEB_BUCKET: bioalert-web-${self:provider.stage}-${aws:accountId}
+    events:
+      - schedule: cron(0 12 ? * MON *)   # Lun 7 AM Colombia
 
 resources:
   Resources:
