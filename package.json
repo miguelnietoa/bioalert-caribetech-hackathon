@@ -10,16 +10,21 @@
     "deploy": "serverless deploy --stage hackathon",
     "deploy:logs": "serverless logs --tail --stage hackathon",
     "remove": "serverless remove --stage hackathon",
-    "etl": "bash scripts/etl-reto-to-rds.sh",
-    "schema:apply": "bash scripts/apply-schema.sh",
+    "etl": "tsx scripts/etl-reto-to-rds.ts",
+    "etl:shell": "bash scripts/etl-reto-to-rds.sh",
+    "schema:apply": "tsx scripts/apply-schema.ts",
+    "schema:apply:shell": "bash scripts/apply-schema.sh",
+    "nutrition:bootstrap": "tsx scripts/bootstrap-nutrition.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
-    "@aws-sdk/client-ssm": "^3.700.0",
     "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/client-ssm": "^3.700.0",
     "@aws-sdk/lib-dynamodb": "^3.700.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "pg-copy-streams": "^6.0.6",
+    "pg-copy-streams": "^7.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
