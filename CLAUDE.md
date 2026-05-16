@@ -172,16 +172,17 @@ Las tools del agente queryean **directo contra `hackaton_*`** y joinean con `bio
 
 ---
 
-## 7. Reparto del equipo (4 personas: 3 devs + 1 product)
+## 7. Reparto del equipo (3 personas)
 
-| Rol | Responsabilidad principal | Lambdas / Artefactos owned |
+| Rol | Owner | Plan detallado |
 |---|---|---|
-| **Dev 1 — Conversacional** | Canal WhatsApp + agente conversacional end-to-end | Kapso onboarding + `lambdas/conversation-handler/` (US-01, US-04, EXT-1, EXT-4, EXT-6) + las 8 tools + `lambdas/shared/whatsapp.ts` + `lambdas/shared/claude.ts` |
-| **Dev 2 — Alertas** | Todas las alertas (síncronas y por cron) | `lambdas/allergen-polling/` (US-03) + `lambdas/absence-cron/` (US-02) + `lambdas/stock-cron/` (US-05) + `lambdas/nutrition-weekly/` (EXT-2) + `lambdas/cafeteria-weekly/` (EXT-3 + EXT-5) |
-| **Dev 3 — Infra + Data + Web** | AWS, IaC, fixtures, vistas estáticas | Cuenta AWS + Serverless Framework setup + RDS Proxy + DynamoDB + SSM + S3/CloudFront + `data/fixtures/*.sql` + bootstrap nutrición con Claude + `web/nutrition-report/` + `web/cafeteria-insights/` + `lambdas/shared/db.ts` + `lambdas/shared/dynamo-conversations.ts` + `lambdas/shared/ssm.ts` |
-| **Product Senior** | Caso demo + uplift + pitch (sin código) | EDA del dataset → elección de colegio piloto → caso "Diana y Mateo" + cálculo de uplift en 3 escenarios + outline de pitch (15 slides) + 3 ensayos completos |
+| **Track A — Conversacional + Producto** | Miguel | [`docs/plans/2026-05-16-track-a-conversacional.md`](docs/plans/2026-05-16-track-a-conversacional.md) |
+| **Track B — Alertas + Reportes** | Dev 2 | [`docs/plans/2026-05-16-track-b-alertas.md`](docs/plans/2026-05-16-track-b-alertas.md) |
+| **Track C — Infra + Data + Web** | Dev 3 | [`docs/plans/2026-05-16-track-c-infra-data-web.md`](docs/plans/2026-05-16-track-c-infra-data-web.md) |
 
-Coordinación: Dev 3 desbloquea a Dev 1 y Dev 2 (sin AWS+DB no se puede testear nada en la nube). Producto Senior trabaja en paralelo con la DB en local desde H0.
+Overview de dependencias, sync checkpoints (H+2, H+4, H+8, H+12, H+16, H+20, H+22) y reglas anti-conflicto en [`docs/team-plan.md`](docs/team-plan.md).
+
+Camino crítico: Dev 3 desbloquea a Miguel y Dev 2. Mientras Dev 3 arma infra (H0-H4), Miguel hace EDA + caso demo y Dev 2 hace opt-in + specs.
 
 ---
 
