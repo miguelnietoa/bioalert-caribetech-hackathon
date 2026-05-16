@@ -2,12 +2,19 @@ import type { ScheduledHandler } from 'aws-lambda'
 import { query } from '../shared/db.js'
 import { sendText } from '../shared/whatsapp.js'
 import { logger } from '../shared/logger.js'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const SQL = readFileSync(resolve(__dirname, 'queries/find-low-stock.sql'), 'utf8')
+const SQL = `
+SELECT
+  i.nombre_producto,
+  i.current_stock,
+  i.minimum_stock,
+  ca.phone_e164,
+  ca.display_name
+FROM bioalert.inventory i
+JOIN bioalert.cafeteria_admins ca ON ca.nit_colegio = i.nit_colegio
+WHERE i.current_stock <= i.minimum_stock
+ORDER BY ca.phone_e164, i.current_stock ASC;
+`
 
 export const handler: ScheduledHandler = async () => {
   const rows = await query<{
