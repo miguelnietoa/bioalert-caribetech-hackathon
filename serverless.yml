@@ -97,6 +97,18 @@ functions:
     events:
       - schedule: cron(0 12 ? * MON *)   # Lun 7 AM Colombia
 
+  # Track A — webhook Kapso (US-01, EXT-1, EXT-4, EXT-6)
+  conversation-handler:
+    handler: lambdas/conversation-handler/index.handler
+    timeout: 30
+    memorySize: 1024
+    environment:
+      STAGE: ${self:provider.stage}
+    events:
+      - httpApi:
+          method: POST
+          path: /webhook/kapso
+
 resources:
   Resources:
 
