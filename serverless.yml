@@ -121,6 +121,37 @@ resources:
           AttributeName: expires_at
           Enabled: true
 
+    WebBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: bioalert-web-${self:provider.stage}-${aws:accountId}
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
+
+    WebBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: '*'
+              Action: s3:GetObject
+              Resource: !Join
+                - ''
+                - - !GetAtt WebBucket.Arn
+                  - '/*'
+
   Outputs:
     DBEndpoint:
       Description: 'RDS endpoint (host)'
@@ -131,3 +162,8 @@ resources:
       Value: !GetAtt DBSecurityGroup.GroupId
     ConversationsTableName:
       Value: !Ref ConversationsTable
+    WebBucketName:
+      Value: !Ref WebBucket
+    WebBucketWebsiteUrl:
+      Description: 'S3 static site base URL (append path, e.g. nutrition-report/)'
+      Value: !GetAtt WebBucket.WebsiteURL
