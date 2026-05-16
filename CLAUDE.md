@@ -224,7 +224,7 @@ Camino crítico: Jose Maza desbloquea a Miguel y Jose Arcila. Mientras Jose Maza
 - Vista cafeteria-insights (EXT-3): **not started**
 
 ### Producto
-- Caso "Diana y Mateo" elegido y documentado: **not started**
+- Caso "Diana y Mateo" elegido y documentado: **done** — `analysis/results/caso-demo.md`. Colegio piloto `900000680`. Mateo Martinez Ramirez (`0010204385`, 41.4% dulce), padre `0090233965` → mapeado como "Diana" al tel de Miguel. Esteban Nieto Lopez (irregular) + Valentina Mendoza Morales (control). Métricas: Mateo gasta 1.9× vs promedio colegio, 2.6× más veces, 9 de 10 productos top son snack/dulce.
 - Cálculo de uplift por 3 escenarios + extrapolación 90 colegios: **not started**
 - Pitch outline (15 slides max) + ensayos: **not started**
 
