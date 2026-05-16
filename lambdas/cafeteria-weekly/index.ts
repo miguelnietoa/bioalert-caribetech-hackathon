@@ -3,14 +3,57 @@ import { query } from '../shared/db.js'
 import { sendText } from '../shared/whatsapp.js'
 import { logger } from '../shared/logger.js'
 import { chatWithTools, MODEL_BATCH } from '../shared/claude.js'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const BENCHMARK_SQL = readFileSync(resolve(__dirname, 'queries/cafeteria-benchmark.sql'), 'utf8')
-const INSIGHTS_SQL = readFileSync(resolve(__dirname, 'queries/cross-insights.sql'), 'utf8')
+const BENCHMARK_SQL = `
+-- Compara el colegio piloto vs. el resto de colegios
+WITH piloto AS (
+  SELECT category, COUNT(*) AS ventas
+  FROM reto.ventas v
+  LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
+  WHERE v.nit_colegio = $1
+    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+  GROUP BY category
+),
+resto AS (
+  SELECT category, COUNT(*) AS ventas, COUNT(DISTINCT nit_colegio) AS colegios
+  FROM reto.ventas v
+  LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
+  WHERE v.nit_colegio != $1
+    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+  GROUP BY category
+)
+SELECT
+  COALESCE(piloto.category, resto.category) AS category,
+  piloto.ventas                              AS piloto_ventas,
+  ROUND(resto.ventas::numeric / NULLIF(resto.colegios, 0)) AS avg_otros_colegios
+FROM piloto FULL OUTER JOIN resto USING (category)
+ORDER BY piloto_ventas DESC NULLS LAST;
+`
+
+const INSIGHTS_SQL = `
+-- Agrega señales de padres del colegio piloto.
+SELECT
+  COUNT(DISTINCT v.identificacion_padre) FILTER (WHERE pn.category IN ('dulce','snack'))
+    AS padres_alto_azucar_proxy,
+  (SELECT array_agg(nombre_producto)
+   FROM (
+     SELECT v2.nombre_producto FROM reto.ventas v2
+     LEFT JOIN bioalert.product_nutrition pn2 ON pn2.nombre_producto = v2.nombre_producto
+     WHERE v2.nit_colegio != $1
+       AND pn2.category IN ('fruta','lacteo')
+       AND v2.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+     GROUP BY v2.nombre_producto
+     HAVING NOT EXISTS (
+       SELECT 1 FROM reto.ventas v3 WHERE v3.nit_colegio = $1 AND v3.nombre_producto = v2.nombre_producto
+     )
+     ORDER BY COUNT(*) DESC LIMIT 3
+   ) t) AS productos_faltantes_saludables
+FROM reto.ventas v
+LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
+WHERE v.nit_colegio = $1
+  AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days';
+`
 
 const BUCKET = process.env.WEB_BUCKET ?? 'bioalert-web-hackathon'
 const s3 = new S3Client({})
