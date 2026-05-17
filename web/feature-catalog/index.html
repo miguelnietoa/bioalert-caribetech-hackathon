@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioAlert+ · Catálogo de capacidades</title>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --primary: #16A34A;
+      --primary-dark: #15803D;
+      --secondary: #1B5BBF;
+      --wa-green: #25D366;
+      --wa-green-dark: #1FBA5A;
+      --text: #0F172A;
+      --text-soft: #64748B;
+      --border: #E2E8F0;
+      --tag-bg: #ECFDF5;
+      --tag-text: #047857;
+      --success: #10B981;
+      --error: #DC2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 1.5rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--primary);
+    }
+    header .row {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;
+    }
+    .logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 8px;
+      display: grid; place-items: center;
+      color: white; font-weight: 800; font-size: 1.3rem;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; }
+    .lead { color: var(--text-soft); margin-top: 0.5rem; font-size: 0.95rem; max-width: 800px; }
+    .context-pill {
+      display: inline-block;
+      background: var(--tag-bg); color: var(--tag-text);
+      padding: 0.25rem 0.65rem; border-radius: 99px;
+      font-size: 0.78rem; font-weight: 600;
+      margin-right: 0.4rem;
+    }
+    section { margin-top: 2.5rem; }
+    section h2 {
+      font-size: 1.15rem;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    section .section-sub {
+      color: var(--text-soft);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.06); transform: translateY(-1px); }
+    .card-head {
+      display: flex; justify-content: space-between; align-items: start; gap: 0.5rem;
+    }
+    .card-title { font-size: 1.05rem; font-weight: 600; }
+    .card-desc { color: var(--text-soft); font-size: 0.9rem; }
+    .card-actions {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin-top: auto; padding-top: 0.5rem;
+    }
+    .btn {
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: white;
+      color: var(--text);
+      transition: all 0.15s;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: inherit;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-aws {
+      background: var(--primary); color: white; border-color: var(--primary);
+    }
+    .btn-aws:hover:not(:disabled) {
+      background: var(--primary-dark); border-color: var(--primary-dark);
+    }
+    .btn-wa {
+      background: var(--wa-green); color: white; border-color: var(--wa-green);
+    }
+    .btn-wa:hover { background: var(--wa-green-dark); border-color: var(--wa-green-dark); color: white; }
+    .btn-view {
+      background: var(--secondary); color: white; border-color: var(--secondary);
+    }
+    .btn-view:hover { background: #134DA1; border-color: #134DA1; color: white; }
+    .card-status {
+      font-size: 0.82rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 6px;
+      background: #F1F5F9;
+      color: var(--text-soft);
+      display: none;
+      word-break: break-word;
+    }
+    .card-status.show { display: block; }
+    .card-status.ok { background: #ECFDF5; color: #047857; }
+    .card-status.err { background: #FEF2F2; color: var(--error); }
+    .info-card {
+      background: #F0F9FF;
+      border-color: #BAE6FD;
+    }
+    .info-card .pill { background: #DBEAFE; color: #1E40AF; }
+    .pill {
+      display: inline-block;
+      background: var(--tag-bg); color: var(--tag-text);
+      padding: 0.2rem 0.55rem; border-radius: 99px;
+      font-size: 0.72rem; font-weight: 600;
+      white-space: nowrap;
+    }
+    footer {
+      margin-top: 3rem; padding: 1.5rem 0 0;
+      border-top: 1px solid var(--border);
+      color: var(--text-soft); font-size: 0.85rem;
+      text-align: center;
+    }
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.75rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <div class="logo">B</div>
+      <h1>BioAlert+ · Catálogo de capacidades</h1>
+    </div>
+    <p class="lead">
+      Demo en vivo del producto.
+      <span class="context-pill">Colegio piloto: DEMO 680</span>
+      <span class="context-pill">Padre demo: Diana (madre de Mateo)</span>
+    </p>
+    <p class="lead" style="margin-top: 0.75rem;">
+      Cada feature ofrece hasta 3 modos para demostrarla:
+      <strong style="color: var(--primary)">🤖 Disparar real</strong> (llega al WhatsApp del padre demo),
+      <strong style="color: var(--wa-green)">💬 Abrir WhatsApp</strong> (texto pre-escrito al sandbox Kapso) o
+      <strong style="color: var(--secondary)">🔗 Ver vista</strong> (página web complementaria).
+    </p>
+  </header>
+
+  <section>
+    <h2>👨‍👩‍👧 Conversacional · Padre</h2>
+    <div class="section-sub">Conversaciones que un padre tiene con el bot vía WhatsApp.</div>
+    <div class="grid" data-section="parent"></div>
+  </section>
+
+  <section>
+    <h2>🏫 Conversacional · Admin cafetería</h2>
+    <div class="section-sub">Cuando el bot detecta que el teléfono es de un admin de cafetería, cambia su rol y su set de tools.</div>
+    <div class="grid" data-section="admin"></div>
+  </section>
+
+  <section>
+    <h2>⏰ Crons event-driven</h2>
+    <div class="section-sub">Lambdas que disparan en horarios fijos. "Disparar real" las invoca de forma async.</div>
+    <div class="grid" data-section="cron"></div>
+  </section>
+
+  <section>
+    <h2>💡 Diferenciadores técnicos</h2>
+    <div class="section-sub">Decisiones de producto que no caben en un botón de demo pero que distinguen a BioAlert+ de un chatbot básico.</div>
+    <div class="grid" data-section="view_only"></div>
+  </section>
+
+  <footer>
+    BioAlert+ · Caribe Tech Arena 2026 · Reto Biofood ·
+    <a href="https://github.com/miguelnietoa/bioalert-caribetech-hackathon" target="_blank" style="color: var(--secondary);">GitHub</a>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
