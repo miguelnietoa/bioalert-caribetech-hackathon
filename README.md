@@ -328,9 +328,10 @@ Velocidad de hackathon + control absoluto sobre los planes de ejecución. Las qu
 
 | Rol | Owner | Responsable de |
 |---|---|---|
-| 🎤 **Track A · Conversacional + Producto** | [Miguel Nieto](https://github.com/miguelnietoa) | conversation-handler, 9 tools, system prompts, multi-hijo, días hábiles, dashboard, pitch |
+| 🎤 **Track A · Conversacional + Demo** | [Miguel Nieto](https://github.com/miguelnietoa) | conversation-handler, 9 tools, system prompts, multi-hijo, días hábiles, dashboard, feature catalog |
 | 🚨 **Track B · Alertas + Reportes** | Jose Arcila | crons (allergen, absence, stock, nutrition-weekly, cafeteria-weekly), opt-in usuarios, specs de alertas |
 | 🏗 **Track C · Infra + Data + Web** | Jose Maza | serverless.yml, RDS, ETL, fixtures, vistas web React, S3+CloudFront |
+| 📋 **Producto · Discovery + Pitch** | Andrés Felipe Maencha | entender el problema y los puntos de dolor, modelar los flujos del usuario, diseño narrativo del pitch |
 
 3 ingenieros senior + 1 product senior coordinando 24 horas non-stop. Reparto detallado en [`docs/team-plan.md`](./docs/team-plan.md) con checkpoints sincronizados H+2/H+4/H+8/H+12/H+16/H+20/H+22.
 
