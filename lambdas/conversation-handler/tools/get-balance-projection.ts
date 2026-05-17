@@ -28,6 +28,7 @@ gastos AS (
   WHERE v.usuario_identificacion = yo.usuario_identificacion
 ),
 patron AS (
+  -- Solo días hábiles (lun-vie). El estudiante no come en la cafetería sáb/dom.
   SELECT
     ROUND(SUM(v.importe) / NULLIF(COUNT(DISTINCT v.fecha), 0))::int AS gasto_diario_avg,
     COUNT(DISTINCT v.fecha)::int                                    AS dias_con_compra,
@@ -35,23 +36,24 @@ patron AS (
   FROM reto.ventas v, yo
   WHERE v.usuario_identificacion = yo.usuario_identificacion
     AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
+    AND EXTRACT(DOW FROM v.fecha) BETWEEN 1 AND 5
 )
 SELECT
   yo.usuario_identificacion,
   (recargas.total - gastos.total)::numeric          AS balance_actual,
-  patron.gasto_diario_avg                           AS gasto_diario_avg,
-  patron.dias_con_compra                            AS dias_con_compra_30d,
+  patron.gasto_diario_avg                           AS gasto_diario_avg_habil,
+  patron.dias_con_compra                            AS dias_habiles_con_compra_30d,
   patron.ultima_compra                              AS ultima_compra,
   CASE
     WHEN patron.gasto_diario_avg IS NULL OR patron.gasto_diario_avg = 0 THEN NULL
     ELSE ROUND((recargas.total - gastos.total) / patron.gasto_diario_avg)::int
-  END                                               AS dias_estimados_restantes
+  END                                               AS dias_habiles_restantes
 FROM yo, recargas, gastos, patron
 `
 
 export const def: Anthropic.Tool = {
   name: 'get_balance_projection',
-  description: 'Calcula el saldo actual del estudiante (recargas totales menos consumos totales) y proyecta en cuántos días se agota según el patrón de gasto de los últimos 30 días. Útil cuando el padre pregunta por saldo o cuándo se acaba.',
+  description: 'Calcula el saldo actual del estudiante (recargas totales menos consumos totales) y proyecta en cuántos DÍAS HÁBILES de cafetería se agota según su patrón de gasto. Los niños comen en la cafetería de lunes a viernes — todos los promedios y proyecciones están en días hábiles, no calendario. Útil cuando el padre pregunta por saldo o cuándo se acaba.',
   input_schema: {
     type: 'object',
     properties: {},
@@ -63,18 +65,20 @@ export async function handler(_input: unknown, phone: string): Promise<unknown> 
   const rows = await query<{
     usuario_identificacion: string
     balance_actual: number
-    gasto_diario_avg: number | null
-    dias_con_compra_30d: number
+    gasto_diario_avg_habil: number | null
+    dias_habiles_con_compra_30d: number
     ultima_compra: Date
-    dias_estimados_restantes: number | null
+    dias_habiles_restantes: number | null
   }>(SQL, [phone])
   const r = rows[0]
   if (!r) return { mensaje: 'student_not_found' }
   return {
     balance_actual: Math.round(Number(r.balance_actual)),
-    gasto_diario_promedio: r.gasto_diario_avg,
-    dias_con_compra_ultimos_30: r.dias_con_compra_30d,
+    gasto_diario_promedio_habil: r.gasto_diario_avg_habil,
+    dias_habiles_con_compra_ultimos_30: r.dias_habiles_con_compra_30d,
     ultima_compra: r.ultima_compra,
-    dias_estimados_restantes: r.dias_estimados_restantes,
+    dias_habiles_restantes: r.dias_habiles_restantes,
+    nota_metodologica:
+      'Todos los valores se miden en días hábiles (lun-vie). El estudiante no come en cafetería sáb/dom.',
   }
 }
