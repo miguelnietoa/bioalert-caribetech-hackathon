@@ -1,0 +1,137 @@
+%%{ init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#0f172a',
+    'primaryBorderColor': '#2b6cb0',
+    'lineColor': '#64748b',
+    'fontFamily': 'Inter, sans-serif',
+    'fontSize': '13px'
+  },
+  'flowchart': { 'curve': 'basis', 'htmlLabels': true, 'nodeSpacing': 50, 'rankSpacing': 80 }
+}}%%
+flowchart LR
+
+  %% ─── Usuarios (izquierda) ───
+  Padre(["👨‍👩‍👧 Padre"])
+  Admin(["🏫 Admin cafetería"])
+  Demo(["🎤 Jurado / demo"])
+
+  %% ─── Canal externo WhatsApp ───
+  subgraph CHANNEL["📱 WhatsApp"]
+    direction TB
+    Kapso["Kapso Sandbox<br/>(inbound, HMAC)"]
+    Meta["Meta Cloud API<br/>(outbound directo)"]
+  end
+
+  %% ─── Vistas Web ───
+  subgraph WEB["🌐 S3 + CloudFront"]
+    direction TB
+    FCatalog["feature-catalog<br/>17 capabilities"]
+    Insights["cafeteria-insights<br/>React"]
+    Nutri["nutrition-report"]
+    Wompi["wompi-mock"]
+  end
+
+  %% ─── API Gateway ───
+  subgraph APIGW["🛂 API Gateway · HTTP API"]
+    direction TB
+    R1["POST /webhook/kapso"]
+    R2["POST /demo/trigger"]
+    R3["GET /cafeteria-insights"]
+  end
+
+  %% ─── Lambdas (centro) ───
+  subgraph LAMBDAS["⚡ AWS Lambda · Node 20 + TS"]
+    direction TB
+    LConv["conversation-handler<br/>9 tools · Sonnet 4.6"]:::sync
+    LApi["cafeteria-insights-api<br/>8 queries SQL"]:::sync
+    LDemo["demo-trigger<br/>bridge demo"]:::sync
+    LAlerg["allergen-polling<br/>every 60s"]:::cron
+    LAbs["absence-cron<br/>12 PM daily"]:::cron
+    LStock["stock-cron<br/>7 AM daily"]:::cron
+    LBal["balance-cron<br/>8 AM daily"]:::cron
+    LNutri["nutrition-weekly<br/>Sun 6 PM"]:::cron
+    LCaf["cafeteria-weekly<br/>Mon 7 AM"]:::cron
+  end
+
+  %% ─── EventBridge (top) ───
+  EB["⏰ EventBridge Schedules<br/>rate(1m) + cron(daily) + cron(weekly)"]
+
+  %% ─── Storage (derecha) ───
+  RDS[("🗄️ RDS Postgres 15.7<br/>db.t4g.micro<br/><br/>reto.ventas · 4.26M<br/>reto.recargas · 305k<br/>bioalert.parent_phone_map<br/>bioalert.product_nutrition<br/>bioalert.inventory<br/>bioalert.benchmark_cache<br/>bioalert.cafeteria_admins")]
+  Dynamo[("💾 DynamoDB<br/>conversations<br/>TTL 1h")]
+  SSM[("🔐 SSM Parameter Store<br/>Claude · Kapso · DB · token")]
+
+  %% ─── Claude API ───
+  subgraph AI["🤖 Claude API · Anthropic"]
+    direction TB
+    Sonnet["claude-sonnet-4-6<br/>conversación + tool calling"]
+    Haiku["claude-haiku-4-5<br/>batch / reportes"]
+  end
+
+  %% ─── Flujos principales ───
+  Padre <-->|texto WhatsApp| Kapso
+  Admin <-->|texto WhatsApp| Kapso
+  Demo -->|navega https| WEB
+
+  Kapso -->|webhook firmado| R1
+  FCatalog -->|🤖 Disparar| R2
+  Insights -->|fetch live| R3
+
+  R1 --> LConv
+  R2 --> LDemo
+  R3 --> LApi
+
+  EB --> LAlerg
+  EB --> LAbs
+  EB --> LStock
+  EB --> LBal
+  EB --> LNutri
+  EB --> LCaf
+
+  LDemo -.firma webhook.-> R1
+  LDemo -.async invoke.-> LAlerg
+  LDemo -.async invoke.-> LAbs
+  LDemo -.async invoke.-> LStock
+  LDemo -.async invoke.-> LBal
+  LDemo -.async invoke.-> LNutri
+  LDemo -.async invoke.-> LCaf
+
+  %% ─── A datos (agregado por subgraph) ───
+  LAMBDAS --> RDS
+  LConv <--> Dynamo
+  LAMBDAS -.secrets.-> SSM
+
+  %% ─── A LLM ───
+  LConv <-.tool calling.-> Sonnet
+  LNutri <-.batch.-> Haiku
+  LCaf <-.batch.-> Haiku
+
+  %% ─── Outbound WhatsApp ───
+  LAMBDAS ==>|outbound text| Meta
+  Meta -->|texto| Padre
+  Meta -->|texto| Admin
+
+  %% ─── Reportes pre-generados ───
+  LNutri -->|JSON| Nutri
+  LCaf -->|JSON| Insights
+
+  %% ─── Estilos ───
+  classDef user fill:#e6f0fa,stroke:#2b6cb0,stroke-width:2.5px,color:#1e3a5f;
+  classDef external fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f;
+  classDef sync fill:#d6f5f0,stroke:#0d6f63,stroke-width:1.5px,color:#064e3b;
+  classDef cron fill:#fde2e2,stroke:#c53030,stroke-width:1px,color:#7a1313;
+  classDef store fill:#f1f5f9,stroke:#475569,stroke-width:1.5px,color:#0f172a;
+  classDef api fill:#ffffff,stroke:#2b6cb0,stroke-width:2px,color:#1e3a5f;
+  classDef web fill:#ffffff,stroke:#4fd1c5,stroke-width:1.5px,color:#0d6f63;
+  classDef ai fill:#fef3c7,stroke:#92400e,stroke-width:1.5px,color:#78350f;
+  classDef sched fill:#e9d5ff,stroke:#7c3aed,stroke-width:1.5px,color:#4c1d95;
+
+  class Padre,Admin,Demo user;
+  class Kapso,Meta external;
+  class RDS,Dynamo,SSM store;
+  class R1,R2,R3 api;
+  class FCatalog,Insights,Nutri,Wompi web;
+  class Sonnet,Haiku ai;
+  class EB sched;
