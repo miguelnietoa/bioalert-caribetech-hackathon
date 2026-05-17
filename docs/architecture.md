@@ -8,7 +8,7 @@
 
 ## 1. Qué es BioAlert+
 
-**BioAlert+** es un agente conversacional de WhatsApp para padres y administradores de cafeterías escolares de **Biofood** (~90 colegios en Colombia, ~10 años de data transaccional acumulada).
+**BioAlert+** es un agente conversacional de WhatsApp para padres y administradores de cafeterías escolares de **Biofood** (~90 colegios en Colombia, ~4.26M ventas y ~305k recargas en el dataset del reto).
 
 El producto convierte la data transaccional que Biofood ya tiene en Postgres (ventas y recargas de cafetería) en:
 
