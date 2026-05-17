@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Biofood · BioAlert+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bio-primary: #2b6cb0;
+      --bio-primary-dark: #1a4f8a;
+      --bio-accent: #4fd1c5;
+      --bio-accent-dark: #2c9c92;
+      --bio-navy: #1e3a5f;
+      --bio-bg: #f0f4f8;
+      --biofood-pos-blue: #1B5BBF;
+      --biofood-pos-blue-dark: #144a99;
+
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+
+      --green-ok: #2ba46c;
+      --green-ok-soft: #ecfdf5;
+      --red-warn: #c53030;
+      --red-warn-soft: #fef2f2;
+      --amber-soft: #fef3c7;
+      --amber-text: #92400e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--slate-100);
+      color: var(--slate-800);
+      font-size: 14px;
+      line-height: 1.45;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== LAYOUT 3 COLUMNAS ===== */
+    .pos-shell {
+      display: grid;
+      grid-template-columns: 60px 320px 1fr;
+      height: 100vh;
+      min-height: 600px;
+    }
+
+    /* ===== SIDEBAR DECORATIVO ===== */
+    .pos-sidebar {
+      background: var(--biofood-pos-blue);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 18px;
+    }
+    .pos-sidebar .logo-mark {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: white;
+      display: grid; place-items: center;
+      color: var(--biofood-pos-blue);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .pos-sidebar .icon-btn {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      color: rgba(255,255,255,0.85);
+      cursor: default;
+      transition: background 120ms;
+    }
+    .pos-sidebar .icon-btn:hover { background: rgba(255,255,255,0.12); }
+    .pos-sidebar .icon-btn.active { background: rgba(255,255,255,0.18); color: white; }
+    .pos-sidebar svg { width: 20px; height: 20px; }
+
+    /* ===== PANEL CLIENTE ===== */
+    .customer-col {
+      background: white;
+      border-right: 1px solid var(--slate-200);
+      display: flex;
+      flex-direction: column;
+      padding: 18px 16px 16px;
+      overflow-y: auto;
+    }
+
+    .select-customer-btn {
+      width: 100%;
+      padding: 10px 12px;
+      background: white;
+      border: 1.5px solid var(--bio-primary);
+      color: var(--bio-primary);
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 120ms;
+    }
+    .select-customer-btn:hover { background: var(--bio-bg); }
+
+    #customer-panel {
+      margin-top: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .empty-customer {
+      color: var(--bio-primary);
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .customer-name {
+      color: var(--bio-primary-dark);
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 2px;
+      line-height: 1.3;
+    }
+    .customer-meta {
+      color: var(--slate-500);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    .customer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .customer-table thead th {
+      text-align: left;
+      padding: 8px 6px;
+      color: var(--slate-500);
+      font-weight: 600;
+      border-bottom: 1px solid var(--slate-200);
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: 0.04em;
+    }
+    .customer-table tbody td {
+      padding: 12px 6px;
+      color: var(--slate-700);
+    }
+    .customer-table .empty-row td {
+      text-align: center;
+      color: var(--slate-400);
+      font-style: italic;
+      padding: 24px 6px;
+    }
+
+    .totals {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px dashed var(--slate-200);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--slate-700);
+    }
+    .total-row span:last-child {
+      font-weight: 600;
+      color: var(--slate-900);
+      font-variant-numeric: tabular-nums;
+    }
+    .total-row .negative {
+      color: var(--red-warn);
+    }
+    .total-row .negative::after {
+      content: ' (sobregirado)';
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--red-warn);
+      letter-spacing: 0.01em;
+    }
+    .total-row .zero { color: var(--slate-500); }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--slate-200);
+      font-size: 12px;
+      color: var(--slate-600);
+    }
+    .toggle-switch {
+      width: 32px;
+      height: 18px;
+      background: var(--slate-300);
+      border-radius: 99px;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      transition: left 120ms;
+    }
+    .toggle-switch.on { background: var(--bio-primary); }
+    .toggle-switch.on::after { left: 16px; }
+
+    .action-row {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-cancel {
+      padding: 10px 12px;
+      background: white;
+      border: 1.5px solid var(--red-warn);
+      color: var(--red-warn);
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .btn-cancel:hover { background: var(--red-warn-soft); }
+    .btn-cobrar {
+      padding: 10px 12px;
+      background: var(--bio-primary);
+      border: 1.5px solid var(--bio-primary);
+      color: white;
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .btn-cobrar:hover { background: var(--bio-primary-dark); }
+
+    /* ===== ÁREA CENTRAL ===== */
+    .main-col {
+      display: flex;
+      flex-direction: column;
+      background: var(--bio-bg);
+      overflow-y: auto;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+      gap: 16px;
+    }
+    .bodega-tag {
+      font-size: 12.5px;
+      color: var(--slate-600);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bodega-tag strong { color: var(--slate-900); font-weight: 600; }
+    .bodega-tag .pill {
+      background: var(--slate-100);
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--slate-700);
+    }
+    .id-input-wrap {
+      position: relative;
+      width: 280px;
+    }
+    .id-input-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--slate-400);
+    }
+    #user-id-input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border: 1px solid var(--slate-300);
+      border-radius: 8px;
+      background: var(--slate-50);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--slate-800);
+      transition: border 120ms, background 120ms;
+    }
+    #user-id-input:focus {
+      outline: none;
+      border-color: var(--bio-primary);
+      background: white;
+    }
+
+    .main-content {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ===== ESTADO VACÍO / CARDS DE SUGERENCIA ===== */
+    #alerts-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .empty-state {
+      flex: 1;
+      min-height: 220px;
+      background: white;
+      border: 1px dashed var(--slate-300);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--slate-500);
+      padding: 32px;
+      text-align: center;
+    }
+    .empty-state .empty-icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--slate-100);
+      display: grid; place-items: center;
+      color: var(--slate-400);
+    }
+    .empty-state .empty-icon svg { width: 28px; height: 28px; }
+    .empty-state p {
+      font-size: 13.5px;
+      color: var(--slate-500);
+      max-width: 320px;
+    }
+
+    .loading {
+      padding: 32px;
+      text-align: center;
+      color: var(--slate-500);
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .not-found {
+      padding: 24px;
+      background: white;
+      border: 1px solid var(--amber-soft);
+      border-left: 4px solid #d97706;
+      border-radius: 10px;
+      color: var(--amber-text);
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+    }
+
+    .error {
+      padding: 16px;
+      background: var(--red-warn-soft);
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      color: var(--red-warn);
+      font-size: 13px;
+    }
+
+    .ok-state {
+      padding: 20px 24px;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-left: 4px solid var(--green-ok);
+      border-radius: 10px;
+      color: var(--slate-600);
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ok-state::before {
+      content: '✓';
+      color: var(--green-ok);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .alert-card {
+      background: white;
+      border: 1px solid #d4f1ee;
+      border-left: 4px solid var(--bio-accent);
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--bio-accent-dark);
+      font-weight: 600;
+      font-size: 11.5px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      align-self: flex-start;
+    }
+    .alert-tag .category {
+      color: var(--slate-500);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    .alert-message {
+      font-size: 14.5px;
+      color: var(--slate-800);
+      line-height: 1.5;
+    }
+
+    .substitutes {
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .substitutes-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--slate-600);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .substitutes ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .substitutes li {
+      font-size: 13px;
+      color: var(--slate-700);
+      padding-left: 14px;
+      position: relative;
+    }
+    .substitutes li::before {
+      content: '•';
+      color: var(--bio-accent-dark);
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+    .substitutes li strong {
+      color: var(--slate-900);
+      font-weight: 600;
+    }
+
+    .alert-fine {
+      font-size: 11.5px;
+      color: var(--slate-400);
+      margin-top: 2px;
+    }
+
+    /* ===== CATEGORÍAS ===== */
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .cat-card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: default;
+      transition: border-color 120ms;
+    }
+    .cat-card:hover { border-color: var(--bio-primary); }
+    .cat-card .cat-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--bio-bg);
+      display: grid; place-items: center;
+      margin: 0 auto 8px;
+      color: var(--bio-primary);
+      font-size: 18px;
+    }
+    .cat-card .cat-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-700);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 960px) {
+      .pos-shell {
+        grid-template-columns: 60px 1fr;
+        height: auto;
+      }
+      .main-col { grid-column: span 2; }
+      .customer-col {
+        border-right: none;
+        border-bottom: 1px solid var(--slate-200);
+      }
+    }
+    @media (max-width: 640px) {
+      .pos-shell { grid-template-columns: 1fr; }
+      .pos-sidebar {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 10px 16px;
+        gap: 12px;
+      }
+      .pos-sidebar .logo-mark { margin-bottom: 0; }
+      .customer-col, .main-col { grid-column: auto; }
+      .main-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .id-input-wrap { width: 100%; }
+      .categories { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-shell">
+
+    <!-- SIDEBAR DECORATIVO -->
+    <aside class="pos-sidebar" aria-hidden="true">
+      <div class="logo-mark">b</div>
+      <div class="icon-btn active" title="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V21H3z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <div class="icon-btn" title="Mail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      </div>
+      <div class="icon-btn" title="Cafetería">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v6a3 3 0 0 0 3 3h0V2"/><path d="M9 2v6"/><path d="M14 2v8a3 3 0 0 0 3 3v9"/></svg>
+      </div>
+    </aside>
+
+    <!-- COLUMNA CLIENTE -->
+    <section class="customer-col">
+      <button class="select-customer-btn" type="button" tabindex="-1">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Seleccionar cliente
+      </button>
+      <div id="customer-panel"></div>
+      <div class="toggle-row">
+        <span>Venta directa</span>
+        <div class="toggle-switch" id="venta-directa-toggle"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn-cancel" type="button" tabindex="-1">Cancelar</button>
+        <button class="btn-cobrar" id="cobrar-btn" type="button" tabindex="-1">Cobrar</button>
+      </div>
+    </section>
+
+    <!-- ÁREA CENTRAL -->
+    <main class="main-col">
+      <header class="main-header">
+        <div class="bodega-tag">
+          <span>Bodega Activa:</span>
+          <span class="pill">BODEGA 1</span>
+        </div>
+        <div class="id-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input
+            id="user-id-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="ID usuario (presiona Enter)"
+            spellcheck="false"
+          />
+        </div>
+      </header>
+
+      <div class="main-content">
+        <div id="alerts-area">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/><path d="M19 5h4M21 3v4"/></svg>
+            </div>
+            <p>Por favor seleccione un cliente para la venta.</p>
+          </div>
+        </div>
+
+        <section class="categories" aria-label="Categorías de productos">
+          <div class="cat-card">
+            <div class="cat-icon">🥨</div>
+            <div class="cat-name">Snacks</div>
+          </div>
+          <div class="cat-card">
+            <div class="cat-icon">🥤</div>
+            <div class="cat-name">Bebidas</div>
+          </div>
+          <div class="cat-card">
+            <div class="cat-icon">🥐</div>
+            <div class="cat-name">Pastelería</div>
+          </div>
+          <div class="cat-card">
+            <div class="cat-icon">🍦</div>
+            <div class="cat-name">Helados</div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
