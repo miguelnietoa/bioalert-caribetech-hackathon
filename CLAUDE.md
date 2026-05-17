@@ -220,8 +220,17 @@ Camino crítico: Jose Maza desbloquea a Miguel y Jose Arcila. Mientras Jose Maza
 - Bootstrap nutrición: script que llama a Claude una vez con catálogo de productos del piloto → genera `product_nutrition.sql`: **not started**
 
 ### Web (extensiones)
-- Vista nutrition-report (EXT-2): **not started**
-- Vista cafeteria-insights (EXT-3): **not started**
+- Vista `web/nutrition-report/` (EXT-2): **done** — HTML simple + Chart.js, en S3.
+- Vista `web/cafeteria-insights/` (EXT-3 + EXT-5): **done** — React/Vite app de Maza+Arcila, en S3.
+- Vista `web/wompi-mock/` (EXT-1 cierre del flow de pago): **done** — checkout simulado de Wompi, en S3.
+- Vista `web/feature-catalog/` (showcase del producto): **done** — HTML/CSS/JS vanilla.
+  URL: <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/feature-catalog/index.html>
+  Lista las 17 capabilities como cards con hasta 3 modos por feature:
+  (1) 🤖 Disparar real (POST a Lambda `demo-trigger` con token SSM),
+  (2) 💬 Abrir WhatsApp (atajo `wa.me` con texto pre-escrito al sandbox Kapso),
+  (3) 🔗 Ver vista (link directo a página estática complementaria).
+  Backend: `lambdas/demo-trigger/` firma webhook fake al `conversation-handler`
+  o invoca async las Lambdas cron según el tipo de feature.
 
 ### Producto (branch `track-a-conversacional`)
 - Caso "Diana y Mateo" elegido y documentado: **done** — `analysis/results/caso-demo.md`. Colegio piloto `900000680`. Mateo Martinez Ramirez (`0010204385`, 41.4% dulce), padre `0090233965` → mapeado como "Diana" al tel de Miguel. Esteban Nieto Lopez (irregular) + Valentina Mendoza Morales (control). Métricas: Mateo gasta 1.9× vs promedio colegio, 2.6× más veces, 9 de 10 productos top son snack/dulce.
