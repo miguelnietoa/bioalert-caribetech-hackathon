@@ -5,23 +5,32 @@ import type Anthropic from '@anthropic-ai/sdk'
 import { query } from '../../shared/db.js'
 
 const SQL = `
+WITH yo AS (
+  -- Estudiante "principal" del padre = el con más compras totales.
+  SELECT v.usuario_identificacion
+  FROM reto.ventas v
+  JOIN bioalert.parent_phone_map ppm
+    ON ppm.identificacion_padre = v.identificacion_padre
+  WHERE ppm.phone_e164 = $1
+  GROUP BY 1
+  ORDER BY COUNT(*) DESC, MAX(v.fecha) DESC, v.usuario_identificacion ASC
+  LIMIT 1
+)
 SELECT
   v.fecha,
   v.nombre_producto,
   v.cantidad,
   v.importe
 FROM reto.ventas v
-JOIN bioalert.parent_phone_map ppm
-  ON ppm.identificacion_padre = v.identificacion_padre
-WHERE ppm.phone_e164 = $1
-  AND v.fecha = (SELECT MAX(fecha) FROM reto.ventas)
+WHERE v.usuario_identificacion = (SELECT usuario_identificacion FROM yo)
+  AND v.fecha = ((now() AT TIME ZONE 'America/Bogota')::date)
 ORDER BY v.fecha DESC
 LIMIT 20
 `
 
 export const def: Anthropic.Tool = {
   name: 'get_student_consumption_today',
-  description: 'Devuelve la lista de compras del estudiante vinculado al teléfono del padre el día más reciente con actividad. Incluye nombre del producto, cantidad y monto.',
+  description: 'Devuelve la lista de compras del estudiante vinculado al teléfono del padre durante el día de hoy (timezone America/Bogota). Si no hay compras hoy, devuelve mensaje no_purchases_today. Incluye nombre del producto, cantidad y monto.',
   input_schema: {
     type: 'object',
     properties: {},

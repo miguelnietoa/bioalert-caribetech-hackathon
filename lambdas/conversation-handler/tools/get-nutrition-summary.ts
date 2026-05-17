@@ -5,7 +5,18 @@ import type Anthropic from '@anthropic-ai/sdk'
 import { query } from '../../shared/db.js'
 
 const SQL = `
-WITH consumo AS (
+WITH yo AS (
+  -- Estudiante "principal" del padre = el con más compras totales.
+  SELECT v.usuario_identificacion
+  FROM reto.ventas v
+  JOIN bioalert.parent_phone_map ppm
+    ON ppm.identificacion_padre = v.identificacion_padre
+  WHERE ppm.phone_e164 = $1
+  GROUP BY 1
+  ORDER BY COUNT(*) DESC, MAX(v.fecha) DESC, v.usuario_identificacion ASC
+  LIMIT 1
+),
+consumo AS (
   SELECT
     v.fecha,
     v.cantidad,
@@ -16,12 +27,10 @@ WITH consumo AS (
     pn.sodium_mg,
     pn.category
   FROM reto.ventas v
-  JOIN bioalert.parent_phone_map ppm
-    ON ppm.identificacion_padre = v.identificacion_padre
   LEFT JOIN bioalert.product_nutrition pn
     ON pn.nombre_producto = v.nombre_producto
-  WHERE ppm.phone_e164 = $1
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - ($2 || ' days')::interval
+  WHERE v.usuario_identificacion = (SELECT usuario_identificacion FROM yo)
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - ($2 || ' days')::interval
 )
 SELECT
   COUNT(*)::int                                                              AS num_compras,
