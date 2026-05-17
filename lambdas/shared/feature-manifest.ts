@@ -97,6 +97,7 @@ export const FEATURES: FeatureSpec[] = [
     cobertura: 'US-05',
     whatsapp_text: '¿qué tengo en stock crítico hoy?',
     as_phone: DEFAULT_ADMIN_PHONE,
+    view_path: 'cafeteria-insights/index.html',
   },
   {
     id: 'cafeteria_benchmark',
@@ -160,6 +161,17 @@ export const FEATURES: FeatureSpec[] = [
     lambda_function: 'bioalert-hackathon-cafeteria-weekly',
     view_path: 'cafeteria-insights/index.html',
   },
+  {
+    id: 'streak_detector',
+    kind: 'cron',
+    title: 'Detector de rachas (3+ días)',
+    description:
+      'Diario 7:30 AM Bogotá. Si un estudiante consume 3+ días la misma categoría (dulce, snack, bebida...) ' +
+      'el padre recibe WhatsApp con 3 botones: solo alertar / restringir / ver alternativas. ' +
+      'Demo: Mateo (0010204385) tiene rachas reales de dulce y snack — al disparar, Diana recibe la alerta.',
+    cobertura: 'EXT-7 (rachas)',
+    lambda_function: 'bioalert-hackathon-streak-detector',
+  },
 
   // ── Diferenciadores no demostrables como botón pero importantes ──
   {
@@ -182,6 +194,17 @@ export const FEATURES: FeatureSpec[] = [
     title: 'Timezone Bogotá nativo',
     description: 'Todas las queries usan now() AT TIME ZONE America/Bogota — sin confusión con dataset que tiene fechas futuras.',
     cobertura: 'producto real',
+  },
+  {
+    id: 'pos_mock',
+    kind: 'view_only',
+    title: 'POS de cafetería con sugerencias del padre',
+    description:
+      'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias ' +
+      'sutiles que el padre activó. Casos demo: Mateo 0010204385 (gaseosa restringida), ' +
+      'Antonella 0010204361 (dulces restringidos), Valentina 0010130672 (sin restricción — caso control).',
+    cobertura: 'EXT-7 (rachas)',
+    view_path: 'pos-mock/index.html',
   },
 ]
 
