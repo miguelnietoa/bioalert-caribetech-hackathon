@@ -2,7 +2,7 @@
 
 # 🍎 BioAlert+
 
-### El agente de WhatsApp que activa los 10 años de data transaccional de Biofood
+### El agente de WhatsApp que activa la data transaccional de las cafeterías escolares
 
 *Convierte cada compra de cafetería escolar en una conversación inteligente — entre el padre, la cafetería y el bot.*
 
@@ -24,8 +24,8 @@
 
 ## 📌 TL;DR
 
-> Biofood opera ~90 colegios en Colombia con **10 años de data transaccional dormida** en Postgres.
-> Construimos un agente de WhatsApp serverless que la activa, convirtiéndola en:
+> Biofood opera ~90 colegios en Colombia con **millones de transacciones acumuladas** en Postgres que hoy no llegan al padre ni a la cafetería.
+> Construimos un agente de WhatsApp serverless que las activa, convirtiéndolas en:
 > recargas más altas con justificación nutricional, alertas proactivas de alérgenos / saldo / stock,
 > reportes semanales automáticos, e insights cruzados padre↔cafetería.
 >
@@ -37,7 +37,7 @@
 
 ## 🎯 El problema
 
-Pedro Noguera, CEO de **Biofood**, definió un PRD muy claro: la plataforma de cafetería escolar tiene 10 años de data transaccional acumulada (~4.26M ventas, ~305k recargas), pero los padres y administradores no la consumen porque:
+El PRD de **Biofood** lo plantea sin rodeos: la plataforma de cafetería escolar acumula millones de transacciones (~4.26M ventas, ~305k recargas en el dataset del reto), pero los padres y administradores no las consumen porque:
 
 1. **El padre** no sabe qué comió su hijo, cuánto saldo le queda, ni cuándo se va a acabar.
 2. **La cafetería** no tiene benchmark contra otros colegios ni señales accionables de qué producto lanzar o discontinuar.
@@ -342,14 +342,14 @@ Velocidad de hackathon + control absoluto sobre los planes de ejecución. Las qu
 | [`docs/db-schema.md`](./docs/db-schema.md) | Schema del dataset del reto + extensiones bioalert.\* + gotchas |
 | [`docs/pitch-outline.md`](./docs/pitch-outline.md) | Outline del pitch · 15 slides · script del demo en vivo |
 | [`docs/team-plan.md`](./docs/team-plan.md) | Reparto del equipo · 24h con checkpoints sincronizados |
-| [`docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf`](./docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf) | PRD oficial de Pedro Noguera (CEO Biofood) |
+| [`docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf`](./docs/Biofood_PRD_BioAlert_Reto_Hackaton.pdf) | PRD oficial del reto Biofood |
 | [`analysis/results/uplift-pitch.md`](./analysis/results/uplift-pitch.md) | Cálculo de uplift por escenarios + extrapolación a 90 colegios |
 
 ---
 
 ## 🙏 Agradecimientos
 
-- **Pedro Noguera (CEO Biofood)** por un PRD ejemplarmente claro que nos dejó concentrarnos en construir.
+- **Biofood** por un PRD ejemplarmente claro que nos dejó concentrarnos en construir.
 - **Caribe Tech Arena 2026** y el equipo organizador por curar un reto con dataset real y stakeholders accesibles.
 - **Anthropic** por Claude Sonnet 4.6 y Haiku 4.5 — tool calling de Sonnet 4.6 cambió cómo armamos agentes.
 - **Kapso** por un sandbox de WhatsApp que se activa en minutos en vez de semanas.
@@ -365,7 +365,7 @@ Código del hackathon. Uso interno del equipo y del jurado. Post-hackathon: se a
 
 <div align="center">
 
-### *"Activar 10 años de data dormida. En 24 horas. En la palma de la mano de cada padre y cada cafetería."*
+### *"Activar la data dormida de las cafeterías escolares. En 24 horas. En la palma de la mano de cada padre y cada cafetería."*
 
 **BioAlert+** · Hackathon Caribe Tech Arena 2026 · Reto Biofood
 
