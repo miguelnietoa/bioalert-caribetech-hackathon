@@ -20,6 +20,7 @@ WITH yo AS (
   LIMIT 1
 ),
 spend AS (
+  -- Solo días hábiles (lun-vie). En el colegio no se come sábado ni domingo.
   SELECT
     AVG(v.importe)                                                          AS ticket_avg,
     SUM(v.importe)                                                          AS total_30d,
@@ -30,6 +31,7 @@ spend AS (
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
   WHERE v.usuario_identificacion = (SELECT usuario_identificacion FROM yo)
     AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
+    AND EXTRACT(DOW FROM v.fecha) BETWEEN 1 AND 5
 ),
 balance AS (
   SELECT
@@ -82,38 +84,42 @@ export async function handler(_input: unknown, phone: string): Promise<unknown> 
   const gastoDiario = Number(r.gasto_diario_avg)
   const pctDulce = r.pct_dulce ? Number(r.pct_dulce) : 0
 
-  // Anchoring: tres opciones calibradas a horizonte temporal.
-  const esencial = roundToThousand(gastoDiario * 14)             // 2 semanas
-  const equilibrada = roundToThousand(gastoDiario * 30)          // 1 mes
-  const bienestar = roundToThousand(gastoDiario * 30 * 1.4)      // 1 mes + margen para fruta/proteína
+  // Cobertura escolar = días hábiles (lun-vie). Una semana de clase = 5 días.
+  // Un mes escolar promedio ≈ 22 días hábiles.
+  const esencial = roundToThousand(gastoDiario * 10)             // 2 semanas escolares
+  const equilibrada = roundToThousand(gastoDiario * 22)          // 1 mes escolar (4-5 semanas hábiles)
+  const bienestar = roundToThousand(gastoDiario * 22 * 1.4)      // 1 mes + margen para fruta/proteína
 
   return {
     nombre_estudiante: r.nombre_estudiante,
     saldo_actual: Math.round(Number(r.balance_actual)),
     patron: {
-      gasto_diario_promedio: gastoDiario,
+      gasto_diario_promedio_habil: gastoDiario,
       pct_dulce_snack: pctDulce,
     },
+    nota_metodologica:
+      'Cobertura calculada en días hábiles (lun-vie). Esencial = 10 días = 2 semanas escolares. ' +
+      'Equilibrada = 22 días = 1 mes escolar. Bienestar = 22 días + 40% margen.',
     opciones: [
       {
         id: 'esencial',
         nombre: 'Esencial',
         monto: esencial,
-        narrativa: `Cubre 2 semanas según el patrón real (~$${gastoDiario.toLocaleString('es-CO')}/día).`,
+        narrativa: `Cubre 2 semanas de clase (10 días hábiles) según el patrón real (~$${gastoDiario.toLocaleString('es-CO')}/día).`,
       },
       {
         id: 'equilibrada',
         nombre: 'Equilibrada',
         monto: equilibrada,
         narrativa: pctDulce > 30
-          ? `Cubre el mes completo. El ${pctDulce.toFixed(0)}% del consumo va a snack/dulce — vale la pena tener visibilidad mensual en vez de recargar semana a semana.`
-          : 'Cubre el mes completo. Una sola recarga, sin pensarlo más.',
+          ? `Cubre el mes escolar completo (~22 días hábiles). El ${pctDulce.toFixed(0)}% del consumo va a snack/dulce — vale la pena visibilidad mensual en vez de recargar semana a semana.`
+          : 'Cubre el mes escolar completo (~22 días hábiles). Una sola recarga, sin pensarlo más.',
       },
       {
         id: 'bienestar',
         nombre: 'Bienestar',
         monto: bienestar,
-        narrativa: 'Cubre el mes completo + margen para priorizar fruta o proteína cuando la cafetería las tenga.',
+        narrativa: 'Cubre el mes escolar completo + margen para priorizar fruta o proteína cuando la cafetería las tenga.',
       },
     ],
   }
