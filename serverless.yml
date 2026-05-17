@@ -38,6 +38,7 @@ provider:
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/data/*'
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/insights/*'
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/nutrition/*'
+            - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/nutrition-report/data/*'
         - Effect: Allow
           Action:
             - lambda:InvokeFunction

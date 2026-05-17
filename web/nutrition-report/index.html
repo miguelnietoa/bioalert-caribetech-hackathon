@@ -3,49 +3,371 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reporte Nutricional Semanal · BioAlert+</title>
+  <title>Reporte nutricional semanal · BioAlert+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 1rem; background: #f0f4f8; color: #1a202c; }
-    h1 { font-size: 1.4rem; }
-    .card { background: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-    .flag-red { color: #c53030; font-weight: 600; }
-    canvas { max-height: 240px; }
+    :root {
+      --bio-primary:      #2b6cb0;
+      --bio-primary-dark: #1a4f8a;
+      --bio-accent:       #4fd1c5;
+      --bio-navy:         #1e3a5f;
+      --bio-bg:           #f0f4f8;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --red-warn:  #c53030;
+      --amber:     #d97706;
+      --amber-bg:  #fef3c7;
+      --green-ok:  #2ba46c;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+      --radius:    14px;
+      --radius-sm: 10px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bio-bg);
+      color: var(--slate-900);
+      font-weight: 400;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--bio-primary);
+      background: #e6f0fa;
+      padding: 0.3rem 0.65rem;
+      border-radius: 99px;
+      margin-bottom: 1rem;
+    }
+    .eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--bio-primary);
+    }
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--bio-navy);
+      line-height: 1.2;
+    }
+    .subtitle {
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+      color: var(--slate-500);
+      font-weight: 400;
+    }
+    .header { margin-bottom: 1.5rem; }
+    .card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 0.85rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card h2 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      margin-bottom: 0.8rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.85rem;
+    }
+    .stat {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--slate-500);
+    }
+    .stat-value {
+      margin-top: 0.4rem;
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--slate-900);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .stat-unit {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--slate-500);
+      margin-left: 0.18rem;
+    }
+    .stat-delta {
+      margin-top: 0.3rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--slate-500);
+    }
+    .stat-delta.up   { color: var(--red-warn); }
+    .stat-delta.down { color: var(--green-ok); }
+    .top-products li {
+      list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.55rem 0;
+      border-top: 1px solid var(--slate-100);
+      font-size: 0.92rem;
+    }
+    .top-products li:first-child { border-top: none; }
+    .top-products .product-name {
+      color: var(--slate-800);
+      font-weight: 500;
+    }
+    .top-products .product-count {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--bio-primary);
+      background: #e6f0fa;
+      padding: 0.18rem 0.55rem;
+      border-radius: 99px;
+      font-variant-numeric: tabular-nums;
+    }
+    canvas { max-height: 260px; }
+    .narrative {
+      font-size: 0.95rem;
+      color: var(--slate-700);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .flag-card {
+      background: var(--amber-bg);
+      border: 1px solid #f7e3a3;
+      color: #78350f;
+    }
+    .flag-card h2 { color: #92400e; }
+    .flag-list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .flag-list li {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      display: flex; gap: 0.55rem;
+      align-items: flex-start;
+    }
+    .flag-list li::before {
+      content: '⚠️';
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+    .empty {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--slate-500);
+      font-size: 0.92rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--slate-200);
+      font-size: 0.78rem;
+      color: var(--slate-500);
+      text-align: center;
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--slate-100) 0%, var(--slate-200) 50%, var(--slate-100) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s linear infinite;
+      border-radius: var(--radius);
+      height: 80px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   </style>
 </head>
 <body>
-  <h1>Reporte nutricional semanal</h1>
-  <div id="root">Cargando...</div>
+  <div class="wrap">
+    <div class="header">
+      <div class="eyebrow"><span class="dot"></span>BioAlert+ · Reporte semanal</div>
+      <h1 id="title">Cargando…</h1>
+      <div class="subtitle" id="subtitle"></div>
+    </div>
+    <div id="root">
+      <div class="skeleton"></div>
+    </div>
+    <div class="footer">
+      Generado por BioAlert+ · Caribe Tech Arena 2026
+    </div>
+  </div>
+
   <script>
     const params = new URLSearchParams(location.search)
     const studentId = params.get('student') || '0010204385'
+
     fetch(`./data/${studentId}.json`)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json() })
       .then(render)
       .catch(() => {
-        document.getElementById('root').innerHTML =
-          '<div class="card">Sin datos aún. La Lambda <code>nutrition-weekly</code> sube <code>data/' + studentId + '.json</code> aquí.</div>'
+        document.getElementById('title').textContent = 'Sin datos esta semana'
+        document.getElementById('root').innerHTML = `
+          <div class="empty">
+            Aún no tenemos un reporte para el estudiante <code>${studentId}</code>.<br>
+            La Lambda <strong>nutrition-weekly</strong> corre los domingos a las 6 PM Bogotá y publica el reporte aquí.
+          </div>`
       })
 
+    function fmt(n) { return Number(n || 0).toLocaleString('es-CO') }
+
+    function deltaLabel(student, school, unit) {
+      if (!school) return ''
+      const diff = student - school
+      const pct = Math.round((diff / school) * 100)
+      if (Math.abs(pct) < 5) return `≈ promedio del colegio`
+      const arrow = diff > 0 ? '↑' : '↓'
+      const sign = diff > 0 ? '+' : ''
+      const cls = diff > 0 ? 'up' : 'down'
+      return `<span class="stat-delta ${cls}">${arrow} ${sign}${pct}% vs colegio (${fmt(school)} ${unit})</span>`
+    }
+
     function render(d) {
-      const root = document.getElementById('root')
-      root.innerHTML = `
-        <div class="card"><h2>${d.student_name}</h2><p>${d.school} · semana ${d.week}</p></div>
-        <div class="card"><h3>Top productos</h3><ul>${(d.top_products || []).map(p => `<li>${p.name} — ${p.count}x</li>`).join('')}</ul></div>
-        <div class="card"><h3>Macros vs. promedio del colegio</h3><canvas id="macros"></canvas></div>
-        ${(d.flags || []).length ? `<div class="card flag-red">⚠️ ${d.flags.join('. ')}</div>` : ''}
+      // Header
+      document.getElementById('title').textContent = d.student_name || 'Reporte'
+      const school = d.school ? `${d.school} · ` : ''
+      document.getElementById('subtitle').textContent = `${school}semana ${d.week} · ${d.purchases} compras registradas`
+
+      // Macros + comparativa (cards superiores)
+      const [stC, stS, stF, stN] = d.student_macros || [0,0,0,0]
+      const [scC, scS, scF, scN] = d.school_avg_macros || [0,0,0,0]
+      const macroCards = `
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-label">Calorías</div>
+            <div class="stat-value">${fmt(stC)}<span class="stat-unit">kcal</span></div>
+            ${deltaLabel(stC, scC, 'kcal')}
+          </div>
+          <div class="stat">
+            <div class="stat-label">Azúcar</div>
+            <div class="stat-value">${fmt(stS)}<span class="stat-unit">g</span></div>
+            ${deltaLabel(stS, scS, 'g')}
+          </div>
+          <div class="stat">
+            <div class="stat-label">Grasa</div>
+            <div class="stat-value">${fmt(stF)}<span class="stat-unit">g</span></div>
+            ${deltaLabel(stF, scF, 'g')}
+          </div>
+          <div class="stat">
+            <div class="stat-label">Sodio</div>
+            <div class="stat-value">${fmt(stN)}<span class="stat-unit">mg</span></div>
+            ${deltaLabel(stN, scN, 'mg')}
+          </div>
+        </div>
       `
+
+      // % snack/dulce
+      const snackCard = (typeof d.pct_snack === 'number') ? `
+        <div class="card">
+          <h2>% del consumo en snacks y dulces</h2>
+          <div class="stat-value" style="font-size:2.2rem;">${d.pct_snack}<span class="stat-unit">%</span></div>
+          <div class="stat-delta ${d.pct_snack >= 40 ? 'up' : 'down'}" style="margin-top:0.5rem;">
+            ${d.pct_snack >= 40 ? 'Por encima del umbral saludable (40%)' : 'Dentro del umbral saludable'}
+          </div>
+        </div>
+      ` : ''
+
+      // Top productos
+      const top = d.top_products || []
+      const topCard = top.length ? `
+        <div class="card">
+          <h2>Top productos de la semana</h2>
+          <ul class="top-products">
+            ${top.map(p => `<li><span class="product-name">${p.name}</span><span class="product-count">${p.count}×</span></li>`).join('')}
+          </ul>
+        </div>
+      ` : ''
+
+      // Macros chart
+      const chartCard = `
+        <div class="card">
+          <h2>Macros vs. promedio del colegio</h2>
+          <canvas id="macros"></canvas>
+        </div>
+      `
+
+      // Banderas
+      const flags = d.flags || []
+      const flagsCard = flags.length ? `
+        <div class="card flag-card">
+          <h2>Atención</h2>
+          <ul class="flag-list">
+            ${flags.map(f => `<li>${f}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''
+
+      // Narrativa LLM
+      const narrCard = d.narrative ? `
+        <div class="card">
+          <h2>Resumen del asistente nutricional</h2>
+          <div class="narrative">${d.narrative.replace(/</g, '&lt;')}</div>
+        </div>
+      ` : ''
+
+      document.getElementById('root').innerHTML =
+        macroCards + snackCard + topCard + chartCard + flagsCard + narrCard
+
+      // Render chart
       if (d.student_macros && d.school_avg_macros) {
         new Chart(document.getElementById('macros'), {
           type: 'bar',
           data: {
             labels: ['Calorías', 'Azúcar (g)', 'Grasa (g)', 'Sodio (mg)'],
             datasets: [
-              { label: d.student_name, data: d.student_macros, backgroundColor: '#2b6cb0' },
-              { label: 'Promedio colegio', data: d.school_avg_macros, backgroundColor: '#a0aec0' },
+              { label: d.student_name || 'Estudiante', data: d.student_macros, backgroundColor: '#2b6cb0', borderRadius: 6 },
+              { label: 'Promedio colegio', data: d.school_avg_macros, backgroundColor: '#a0aec0', borderRadius: 6 },
             ],
           },
-          options: { responsive: true, plugins: { legend: { position: 'bottom' } } },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 } } }
+            },
+            scales: {
+              x: { ticks: { font: { family: 'Inter', size: 11 } }, grid: { display: false } },
+              y: { ticks: { font: { family: 'Inter', size: 11 } } }
+            }
+          },
         })
       }
     }
