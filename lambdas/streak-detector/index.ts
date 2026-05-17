@@ -99,6 +99,15 @@ export const handler: ScheduledHandler = async (event: any) => {
 
   for (const r of rows) {
     try {
+      if (dryRun) {
+        // dryRun no debe tener efectos: NO insertamos la racha (eso marcaría
+        // notified_at y bloquearía runs reales siguientes vía el NOT EXISTS).
+        logger.info('dry run — skip insert + whatsapp', {
+          phone: r.phone_e164, category: r.category, dias: r.dias_con_compra,
+        })
+        continue
+      }
+
       await query(INSERT_STREAK_SQL, [
         r.usuario_identificacion,
         r.nombre_estudiante,
@@ -106,11 +115,6 @@ export const handler: ScheduledHandler = async (event: any) => {
         r.dias_con_compra,
         r.last_seen,
       ])
-
-      if (dryRun) {
-        logger.info('dry run — skip whatsapp', { phone: r.phone_e164, category: r.category })
-        continue
-      }
 
       const nombre = r.nombre_estudiante ?? 'tu hijo'
       const catLabel = CATEGORY_LABEL[r.category] ?? r.category
