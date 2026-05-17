@@ -144,6 +144,23 @@ functions:
           method: OPTIONS
           path: /demo/trigger
 
+  # HTTP API que sirve el payload de la vista web/cafeteria-insights (React).
+  # Compute on-the-fly desde RDS — sin Claude, solo SQL.
+  # Queries pesadas (benchmark cruza 27 colegios × 60k ventas/sem) → 1024MB para más CPU.
+  cafeteria-insights-api:
+    handler: lambdas/cafeteria-insights-api/index.handler
+    timeout: 30
+    memorySize: 1024
+    environment:
+      STAGE: ${self:provider.stage}
+    events:
+      - httpApi:
+          method: GET
+          path: /cafeteria-insights
+      - httpApi:
+          method: OPTIONS
+          path: /cafeteria-insights
+
 resources:
   Resources:
 
