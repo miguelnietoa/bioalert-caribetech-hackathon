@@ -80,6 +80,7 @@ Todo está desplegado y se puede tocar en vivo. **No es vaporware** — endpoint
 | 📊 **Dashboard cafetería** (React) | <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/cafeteria-insights/index.html> |
 | 🍎 **Reporte nutricional** (Chart.js) | <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/nutrition-report/index.html?student=0010204385> |
 | 💳 **Wompi mock checkout** | <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/wompi-mock/index.html?plan=equilibrada&monto=150000&estudiante=Mateo> |
+| 🛒 **POS cafetería (mock)** | <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/pos-mock/index.html> |
 | 🔌 **HTTP API endpoint** | `https://c8brdpdf03.execute-api.us-east-1.amazonaws.com` |
 
 > 💡 **Cómo usar la demo**: abre el **feature catalog**, cada capability tiene hasta 3 modos: `🤖 Disparar` envía un mensaje real a WhatsApp, `✓ Abrir WhatsApp` te da un atajo `wa.me` con texto pre-escrito, `↗ Ver vista` abre la página complementaria.
@@ -102,7 +103,7 @@ Todo está desplegado y se puede tocar en vivo. **No es vaporware** — endpoint
 
 | Servicio AWS | Rol |
 |---|---|
-| ⚡ **AWS Lambda** | 9 funciones · Node.js 20 + TypeScript (síncronas + programadas) |
+| ⚡ **AWS Lambda** | 11 funciones · Node.js 20 + TypeScript (síncronas + programadas) |
 | 🛂 **Amazon API Gateway** (HTTP API) | 3 rutas públicas (`/webhook/kapso`, `/demo/trigger`, `/cafeteria-insights`) |
 | 🗄 **Amazon RDS PostgreSQL 15.7** | `db.t4g.micro` — 4.26M ventas reales + tablas `bioalert.*` propias |
 | 💾 **Amazon DynamoDB** | Sesiones conversacionales con TTL 1h |
@@ -135,6 +136,11 @@ Servicios externos:
 | Saldo + proyección en días hábiles | "¿cuánto saldo le queda?" | `get_balance_projection` |
 | 3 opciones de recarga con anchoring | "¿cuánto le recargo?" | `get_recharge_recommendations` |
 | Confirmar y pagar con Wompi | "voy con la equilibrada" | `generate_payment_link` |
+| Ver rachas detectadas (3+ días repitiendo categoría) | "¿qué patrones detectaste?" | `get_active_streaks` |
+| Activar restricción sutil de categoría | "no quiero que coma tanta gaseosa por un mes" | `activate_restriction` |
+| Listar restricciones activas | "¿qué le tengo restringido?" | `list_my_restrictions` |
+| Quitar restricción | "quita la restricción de gaseosa" | `remove_restriction` |
+| Ver sustitutos saludables | "¿qué le doy en vez de dulces?" | `get_substitutes` |
 
 ### 🏫 Para administradores de cafetería (conversacional)
 
@@ -151,6 +157,7 @@ Servicios externos:
 | Alerta de ausencia | 12 PM Bogotá (lun-vie) | `absence-cron` |
 | Stock crítico diario | 7 AM Bogotá | `stock-cron` |
 | Aviso de saldo bajo + CTA recarga | 8 AM Bogotá | `balance-cron` |
+| Detector de rachas (3+ días) | 7:30 AM Bogotá | `streak-detector` |
 | Reporte nutricional semanal | Dom 6 PM | `nutrition-weekly` |
 | Reporte semanal cafetería (benchmark + insight cruzado) | Lun 7 AM | `cafeteria-weekly` |
 
@@ -197,7 +204,7 @@ El piloto incluye una familia real del dataset re-mapeada al equipo: **Diana** (
 
 ```
 bioalert-caribetech-hackathon/
-├── lambdas/                     ⚡ 9 funciones Lambda
+├── lambdas/                     ⚡ 11 funciones Lambda
 │   ├── conversation-handler/    💬 Webhook Kapso + Sonnet 4.6 + 9 tools
 │   │   ├── index.ts             │   handler principal
 │   │   ├── tools/               │   9 tools registradas para Claude
