@@ -194,7 +194,7 @@ async function triggerAws(featureId, statusEl, btn) {
       const phone = json.details?.phone
       const lambda = json.details?.lambda
       if (phone) {
-        statusEl.textContent = `✓ Webhook firmado. Mensaje en camino a ${phone} — revisá WhatsApp en 5-10 segundos.`
+        statusEl.textContent = `✓ Webhook firmado. Mensaje en camino a ${phone} — revisa el WhatsApp del padre demo en 5-10 segundos.`
       } else if (lambda) {
         statusEl.textContent = `✓ Cron disparado (${lambda}). El resultado llega vía WhatsApp en 5-15 segundos.`
       } else {
