@@ -3,205 +3,515 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BioAlert+ · Catálogo de capacidades</title>
+  <title>BioAlert+ · Capacidades del producto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #F8FAFC;
-      --card: #FFFFFF;
-      --primary: #16A34A;
-      --primary-dark: #15803D;
-      --secondary: #1B5BBF;
-      --wa-green: #25D366;
-      --wa-green-dark: #1FBA5A;
-      --text: #0F172A;
-      --text-soft: #64748B;
-      --border: #E2E8F0;
-      --tag-bg: #ECFDF5;
-      --tag-text: #047857;
-      --success: #10B981;
-      --error: #DC2626;
+      /* Paleta BioAlert (alineada con cafeteria-insights / wompi-mock) */
+      --bio-primary:      #2b6cb0;
+      --bio-primary-dark: #1a4f8a;
+      --bio-accent:       #4fd1c5;
+      --bio-navy:         #1e3a5f;
+      --bio-bg:           #f0f4f8;
+
+      /* Slate base */
+      --slate-50:  #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+
+      /* Estados */
+      --green-wa: #25d366;
+      --green-ok: #2ba46c;
+      --amber:    #d97706;
+      --red-err:  #c53030;
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+
+      --radius:   12px;
+      --radius-sm: 8px;
+
+      --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 1.5rem 1rem;
-      max-width: 1200px;
+      font-family: var(--font-sans);
+      background: var(--bio-bg);
+      color: var(--slate-900);
+      font-weight: 400;
+      line-height: 1.55;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1080px;
       margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* ─── Hero ──────────────────────────────────────────────── */
+    .hero {
+      background: white;
+      border-radius: var(--radius);
+      padding: 2rem 2.25rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--slate-200);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.5s 0.05s forwards;
+    }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--bio-primary);
+      background: #e6f0fa;
+      padding: 0.35rem 0.7rem;
+      border-radius: 99px;
+      margin-bottom: 1.25rem;
+    }
+    .eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--bio-primary);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.5); opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 3.4vw, 2.25rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--bio-navy);
+      max-width: 28ch;
+      margin-bottom: 0.85rem;
+    }
+    h1 span {
+      color: var(--bio-primary);
+    }
+
+    .lead {
+      font-size: 0.98rem;
+      color: var(--slate-600);
+      max-width: 68ch;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .meta {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    .meta-chip {
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.35rem 0.75rem;
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border-radius: 99px;
+      border: 1px solid var(--slate-200);
+    }
+
+    /* ─── Legend ────────────────────────────────────────────── */
+    .legend {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--slate-200);
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.5s 0.12s forwards;
+    }
+    .legend-item {
+      display: flex; align-items: start; gap: 0.7rem;
+      font-size: 0.85rem; color: var(--slate-600);
       line-height: 1.5;
     }
-    header {
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid var(--primary);
-    }
-    header .row {
-      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;
-    }
-    .logo {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      border-radius: 8px;
+    .legend-item strong { color: var(--slate-900); font-weight: 600; }
+    .legend-key {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      border-radius: var(--radius-sm);
       display: grid; place-items: center;
-      color: white; font-weight: 800; font-size: 1.3rem;
-    }
-    h1 { font-size: 1.6rem; font-weight: 700; }
-    .lead { color: var(--text-soft); margin-top: 0.5rem; font-size: 0.95rem; max-width: 800px; }
-    .context-pill {
-      display: inline-block;
-      background: var(--tag-bg); color: var(--tag-text);
-      padding: 0.25rem 0.65rem; border-radius: 99px;
-      font-size: 0.78rem; font-weight: 600;
-      margin-right: 0.4rem;
-    }
-    section { margin-top: 2.5rem; }
-    section h2 {
-      font-size: 1.15rem;
-      margin-bottom: 0.25rem;
-      color: var(--text);
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    section .section-sub {
-      color: var(--text-soft);
       font-size: 0.85rem;
-      margin-bottom: 1rem;
+      font-weight: 600;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1rem;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      display: flex; flex-direction: column; gap: 0.75rem;
-      transition: box-shadow 0.15s, transform 0.15s;
-    }
-    .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.06); transform: translateY(-1px); }
-    .card-head {
-      display: flex; justify-content: space-between; align-items: start; gap: 0.5rem;
-    }
-    .card-title { font-size: 1.05rem; font-weight: 600; }
-    .card-desc { color: var(--text-soft); font-size: 0.9rem; }
-    .card-actions {
-      display: flex; flex-wrap: wrap; gap: 0.4rem;
-      margin-top: auto; padding-top: 0.5rem;
-    }
-    .btn {
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.82rem;
-      font-weight: 500;
-      cursor: pointer;
+    .key-aws  { background: var(--bio-primary); color: white; }
+    .key-wa   { background: var(--green-wa);    color: white; }
+    .key-view { background: var(--bio-accent);  color: var(--bio-navy); }
+
+    /* ─── Section (acordeón) ────────────────────────────────── */
+    .section {
       background: white;
-      color: var(--text);
-      transition: all 0.15s;
-      text-decoration: none;
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      font-family: inherit;
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.5s forwards;
     }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-aws {
-      background: var(--primary); color: white; border-color: var(--primary);
+    .section:nth-of-type(1) { animation-delay: 0.18s; }
+    .section:nth-of-type(2) { animation-delay: 0.24s; }
+    .section:nth-of-type(3) { animation-delay: 0.30s; }
+    .section:nth-of-type(4) { animation-delay: 0.36s; }
+
+    .section[open] { box-shadow: var(--shadow-md); }
+
+    .section > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 1.4rem 1.75rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 1.25rem;
+      transition: background 0.15s;
     }
-    .btn-aws:hover:not(:disabled) {
-      background: var(--primary-dark); border-color: var(--primary-dark);
-    }
-    .btn-wa {
-      background: var(--wa-green); color: white; border-color: var(--wa-green);
-    }
-    .btn-wa:hover { background: var(--wa-green-dark); border-color: var(--wa-green-dark); color: white; }
-    .btn-view {
-      background: var(--secondary); color: white; border-color: var(--secondary);
-    }
-    .btn-view:hover { background: #134DA1; border-color: #134DA1; color: white; }
-    .card-status {
-      font-size: 0.82rem;
-      padding: 0.55rem 0.7rem;
-      border-radius: 6px;
-      background: #F1F5F9;
-      color: var(--text-soft);
-      display: none;
-      word-break: break-word;
-    }
-    .card-status.show { display: block; }
-    .card-status.ok { background: #ECFDF5; color: #047857; }
-    .card-status.err { background: #FEF2F2; color: var(--error); }
-    .info-card {
-      background: #F0F9FF;
-      border-color: #BAE6FD;
-    }
-    .info-card .pill { background: #DBEAFE; color: #1E40AF; }
-    .pill {
-      display: inline-block;
-      background: var(--tag-bg); color: var(--tag-text);
-      padding: 0.2rem 0.55rem; border-radius: 99px;
-      font-size: 0.72rem; font-weight: 600;
-      white-space: nowrap;
-    }
-    footer {
-      margin-top: 3rem; padding: 1.5rem 0 0;
-      border-top: 1px solid var(--border);
-      color: var(--text-soft); font-size: 0.85rem;
+    .section > summary:hover { background: var(--slate-50); }
+    .section[open] > summary { border-bottom: 1px solid var(--slate-100); }
+    .section[open] > summary:hover { background: var(--slate-50); }
+    .section > summary::-webkit-details-marker { display: none; }
+    .section > summary::marker { content: ''; }
+
+    .section-num {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--bio-primary);
+      background: #e6f0fa;
+      padding: 0.4rem 0.65rem;
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+      min-width: 38px;
       text-align: center;
     }
-    @media (max-width: 480px) {
-      body { padding: 1rem 0.75rem; }
-      .grid { grid-template-columns: 1fr; }
+
+    .section-main {
+      display: flex; flex-direction: column; gap: 0.25rem;
+      min-width: 0;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--bio-navy);
+      line-height: 1.25;
+    }
+    .section-desc {
+      font-size: 0.86rem;
+      color: var(--slate-500);
+      line-height: 1.5;
+      max-width: 68ch;
+    }
+
+    .section-count {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      background: var(--slate-100);
+      padding: 0.35rem 0.7rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section-chevron {
+      width: 24px; height: 24px;
+      display: grid; place-items: center;
+      color: var(--slate-400);
+      transition: transform 0.25s, color 0.15s;
+      font-size: 0.95rem;
+    }
+    .section[open] .section-chevron {
+      transform: rotate(180deg);
+      color: var(--bio-primary);
+    }
+
+    /* ─── Features list (dentro de cada sección) ────────────── */
+    .features {
+      padding: 0.5rem 0;
+    }
+
+    .feature {
+      padding: 1.1rem 1.75rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 1rem;
+      row-gap: 0.4rem;
+      align-items: start;
+    }
+    .feature + .feature {
+      border-top: 1px solid var(--slate-100);
+    }
+    .feature:hover { background: var(--slate-50); }
+
+    .feature-icon {
+      grid-row: 1 / span 3;
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: #e6f0fa;
+      color: var(--bio-primary);
+      display: grid; place-items: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+    .feature.kind-cron .feature-icon { background: #d6f5f0; color: #0d6f63; }
+    .feature.kind-view .feature-icon { background: #fef3c7; color: #92400e; }
+
+    .feature-title {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--slate-900);
+      letter-spacing: -0.005em;
+      line-height: 1.3;
+      grid-column: 2;
+    }
+
+    .feature-desc {
+      grid-column: 2;
+      font-size: 0.88rem;
+      color: var(--slate-600);
+      line-height: 1.55;
+      max-width: 70ch;
+    }
+
+    .feature-actions {
+      grid-column: 2;
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .feature-status {
+      grid-column: 2;
+      font-size: 0.82rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border-left: 3px solid var(--slate-400);
+      border-radius: var(--radius-sm);
+      display: none;
+      word-break: break-word;
+      line-height: 1.5;
+      font-feature-settings: 'tnum' 1;
+      margin-top: 0.5rem;
+    }
+    .feature-status.show { display: block; animation: fadeUp 0.25s ease; }
+    .feature-status.ok  {
+      border-left-color: var(--green-ok);
+      color: #0c4a3a;
+      background: #d6f5e8;
+    }
+    .feature-status.err {
+      border-left-color: var(--red-err);
+      color: #7a1313;
+      background: #fde2e2;
+    }
+
+    /* ─── Buttons ───────────────────────────────────────────── */
+    .btn {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 0.83rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      letter-spacing: -0.005em;
+      line-height: 1;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-icon {
+      font-size: 0.78rem;
+      width: 14px; height: 14px;
+      display: inline-grid; place-items: center;
+      flex-shrink: 0;
+    }
+
+    .btn-aws {
+      background: var(--bio-primary);
+      color: white;
+      border-color: var(--bio-primary);
+    }
+    .btn-aws:hover:not(:disabled) {
+      background: var(--bio-primary-dark);
+      border-color: var(--bio-primary-dark);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-wa {
+      background: white;
+      color: var(--slate-800);
+      border-color: var(--slate-300);
+    }
+    .btn-wa:hover {
+      border-color: var(--green-wa);
+      color: var(--green-wa);
+      background: #f0fdf4;
+    }
+    .btn-wa .btn-icon { color: var(--green-wa); }
+
+    .btn-view {
+      background: white;
+      color: var(--slate-800);
+      border-color: var(--slate-300);
+    }
+    .btn-view:hover {
+      border-color: var(--bio-accent);
+      color: var(--bio-primary-dark);
+      background: #f0fdfb;
+    }
+    .btn-view .btn-icon { color: var(--bio-primary); }
+
+    /* ─── Footer ────────────────────────────────────────────── */
+    footer {
+      margin-top: 2.5rem;
+      padding: 1.5rem 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+      color: var(--slate-500);
+      border-top: 1px solid var(--slate-200);
+    }
+    footer a {
+      color: var(--bio-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    footer a:hover { color: var(--bio-primary-dark); text-decoration: underline; }
+
+    /* ─── Animations ────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .wrap { padding: 1.5rem 1rem 3rem; }
+      .hero { padding: 1.5rem 1.25rem; }
+      .section > summary { padding: 1.1rem 1.25rem; gap: 0.85rem; }
+      .section-count { display: none; }
+      .feature { padding: 1rem 1.25rem; grid-template-columns: 1fr; }
+      .feature-icon { grid-row: auto; }
+      .feature-title, .feature-desc, .feature-actions, .feature-status { grid-column: 1; }
+      .feature-actions .btn { flex: 1 1 calc(50% - 0.25rem); justify-content: center; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="row">
-      <div class="logo">B</div>
-      <h1>BioAlert+ · Catálogo de capacidades</h1>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        BioAlert+ · Caribe Tech Arena 2026
+      </div>
+      <h1>El agente de WhatsApp que <span>activa</span> los 10 años de data de Biofood.</h1>
+      <p class="lead">
+        Cada feature listada abajo está desplegada en producción demo y se puede probar
+        en vivo. Tres modos: disparar la acción real (llega a WhatsApp), abrir el chat con
+        texto pre-escrito, o abrir la vista web complementaria.
+      </p>
+      <div class="meta">
+        <span class="meta-chip">Colegio piloto · DEMO 680</span>
+        <span class="meta-chip">Padre demo · Diana (madre de Mateo)</span>
+        <span class="meta-chip">Stack AWS Serverless · Claude · Kapso</span>
+      </div>
+    </header>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-key key-aws">▸</span><span><strong>Disparar.</strong> POST al endpoint demo; el bot responde por WhatsApp en 5-10s.</span></div>
+      <div class="legend-item"><span class="legend-key key-wa">✓</span><span><strong>Abrir WhatsApp.</strong> Atajo wa.me con el texto exacto pre-escrito.</span></div>
+      <div class="legend-item"><span class="legend-key key-view">↗</span><span><strong>Ver vista.</strong> Página estática complementaria.</span></div>
     </div>
-    <p class="lead">
-      Demo en vivo del producto.
-      <span class="context-pill">Colegio piloto: DEMO 680</span>
-      <span class="context-pill">Padre demo: Diana (madre de Mateo)</span>
-    </p>
-    <p class="lead" style="margin-top: 0.75rem;">
-      Cada feature ofrece hasta 3 modos para demostrarla:
-      <strong style="color: var(--primary)">🤖 Disparar real</strong> (llega al WhatsApp del padre demo),
-      <strong style="color: var(--wa-green)">💬 Abrir WhatsApp</strong> (texto pre-escrito al sandbox Kapso) o
-      <strong style="color: var(--secondary)">🔗 Ver vista</strong> (página web complementaria).
-    </p>
-  </header>
 
-  <section>
-    <h2>👨‍👩‍👧 Conversacional · Padre</h2>
-    <div class="section-sub">Conversaciones que un padre tiene con el bot vía WhatsApp.</div>
-    <div class="grid" data-section="parent"></div>
-  </section>
+    <details class="section" open>
+      <summary>
+        <span class="section-num">01</span>
+        <div class="section-main">
+          <span class="section-title">Para los padres</span>
+          <span class="section-desc">Conversaciones diarias por WhatsApp. El bot reconoce el teléfono, carga el contexto del estudiante y siempre justifica con datos del consumo real.</span>
+        </div>
+        <span class="section-count" data-count-for="parent"></span>
+        <span class="section-chevron">▾</span>
+      </summary>
+      <div class="features" data-section="parent"></div>
+    </details>
 
-  <section>
-    <h2>🏫 Conversacional · Admin cafetería</h2>
-    <div class="section-sub">Cuando el bot detecta que el teléfono es de un admin de cafetería, cambia su rol y su set de tools.</div>
-    <div class="grid" data-section="admin"></div>
-  </section>
+    <details class="section">
+      <summary>
+        <span class="section-num">02</span>
+        <div class="section-main">
+          <span class="section-title">Para la cafetería</span>
+          <span class="section-desc">Cuando quien escribe es admin de cafetería, el rol del bot cambia: pasa de asistente nutricional a asesor de negocio. Las tools también rotan.</span>
+        </div>
+        <span class="section-count" data-count-for="admin"></span>
+        <span class="section-chevron">▾</span>
+      </summary>
+      <div class="features" data-section="admin"></div>
+    </details>
 
-  <section>
-    <h2>⏰ Crons event-driven</h2>
-    <div class="section-sub">Lambdas que disparan en horarios fijos. "Disparar real" las invoca de forma async.</div>
-    <div class="grid" data-section="cron"></div>
-  </section>
+    <details class="section">
+      <summary>
+        <span class="section-num">03</span>
+        <div class="section-main">
+          <span class="section-title">Alertas que llegan solas</span>
+          <span class="section-desc">Lambdas programadas que el bot dispara sin que nadie pregunte: alérgenos en menos de 30 segundos, reportes semanales y stock crítico.</span>
+        </div>
+        <span class="section-count" data-count-for="cron"></span>
+        <span class="section-chevron">▾</span>
+      </summary>
+      <div class="features" data-section="cron"></div>
+    </details>
 
-  <section>
-    <h2>💡 Diferenciadores técnicos</h2>
-    <div class="section-sub">Decisiones de producto que no caben en un botón de demo pero que distinguen a BioAlert+ de un chatbot básico.</div>
-    <div class="grid" data-section="view_only"></div>
-  </section>
+    <details class="section">
+      <summary>
+        <span class="section-num">04</span>
+        <div class="section-main">
+          <span class="section-title">Detalles no obvios</span>
+          <span class="section-desc">Decisiones técnicas que no caben en un botón pero que separan a BioAlert+ de un chatbot escolar.</span>
+        </div>
+        <span class="section-count" data-count-for="view_only"></span>
+        <span class="section-chevron">▾</span>
+      </summary>
+      <div class="features" data-section="view_only"></div>
+    </details>
 
-  <footer>
-    BioAlert+ · Caribe Tech Arena 2026 · Reto Biofood ·
-    <a href="https://github.com/miguelnietoa/bioalert-caribetech-hackathon" target="_blank" style="color: var(--secondary);">GitHub</a>
-  </footer>
+    <footer>
+      <span>BioAlert+ · 2026 · Reto Biofood</span>
+      <a href="https://github.com/miguelnietoa/bioalert-caribetech-hackathon" target="_blank" rel="noopener noreferrer">github →</a>
+    </footer>
+  </div>
 
   <script src="./app.js"></script>
 </body>

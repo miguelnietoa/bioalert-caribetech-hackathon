@@ -2,125 +2,145 @@
 // Frontend del feature catalog. Vanilla JS (sin build step).
 //
 // ⚠️ Si agregás un feature en lambdas/shared/feature-manifest.ts también hay que
-// replicarlo en el array FEATURES de abajo. Es duplicación deliberada — vanilla JS no
-// puede importar TS sin un build pipeline.
+// replicarlo en el array FEATURES de abajo. Es duplicación deliberada — vanilla JS
+// no puede importar TS sin un build pipeline.
 
 // ─── Config ────────────────────────────────────────────────────────────────
-// El TOKEN proviene de SSM /bioalert/hackathon/demo/trigger-token. Es un secret
-// de demo (32 hex) que solo restringe acceso al endpoint público; no protege
-// nada crítico (todas las acciones que dispara ya son funcionalidades públicas
-// del bot). Para producción se reemplazaría por auth real.
+// Token y sandbox se inyectan con sed al deploy desde SSM /bioalert/hackathon/...
+// En el archivo committeado quedan como placeholders __INJECT_*_AT_DEPLOY__.
 const DEMO_TOKEN = '__INJECT_TOKEN_AT_DEPLOY__'
 const TRIGGER_URL = 'https://c8brdpdf03.execute-api.us-east-1.amazonaws.com/demo/trigger'
 const VIEW_BASE = 'https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/'
 const SANDBOX_NUMBER = '__INJECT_SANDBOX_AT_DEPLOY__' // formato sin '+' para wa.me
 
-// ─── Manifest de features (espejo de lambdas/shared/feature-manifest.ts) ───
+// ─── Tagline humana por kind (reemplaza los códigos internos US-XX / EXT-X) ─
+const KIND_TAGLINE = {
+  conversational_parent: 'Diálogo con el padre',
+  conversational_admin: 'Diálogo con la cafetería',
+  cron: 'Acción automática',
+  view_only: 'Decisión técnica',
+}
+
+const KIND_CHIP_CLASS = {
+  conversational_parent: 'kind-parent',
+  conversational_admin: 'kind-admin',
+  cron: 'kind-cron',
+  view_only: 'kind-view',
+}
+
+const KIND_ICON = {
+  conversational_parent: '💬',
+  conversational_admin: '🏫',
+  cron: '⏱',
+  view_only: '◆',
+}
+
+// ─── Features (espejo simplificado de lambdas/shared/feature-manifest.ts) ──
 const FEATURES = [
-  // Conversacional · Padre
+  // Padre
   {
     id: 'consumption_today', kind: 'conversational_parent',
-    title: '¿Qué comió hoy?', cobertura: 'US-01',
-    description: 'Lista de compras del estudiante hoy (timezone Bogotá), con hora, producto y monto.',
+    title: '¿Qué comió hoy?',
+    description: 'Lista de compras del estudiante hoy en zona horaria Bogotá, con hora, producto y monto.',
     whatsapp_text: '¿qué comió Mateo hoy?',
   },
   {
     id: 'consumption_week', kind: 'conversational_parent',
-    title: 'Resumen de la semana', cobertura: 'US-01 ext',
-    description: 'Top productos + número de compras + gasto total últimos 7 días.',
+    title: 'Resumen de la semana',
+    description: 'Top productos, número de compras y gasto total de los últimos 7 días.',
     whatsapp_text: '¿y esta semana cómo le fue?',
   },
   {
     id: 'nutrition_summary', kind: 'conversational_parent',
-    title: 'Análisis nutricional', cobertura: 'EXT-2',
-    description: 'Azúcar, calorías, grasa y sodio acumulados con peso por unidad real.',
+    title: 'Análisis nutricional',
+    description: 'Azúcar, calorías, grasa y sodio acumulados con peso real por unidad — no aproximaciones.',
     whatsapp_text: '¿está comiendo mucha azúcar Mateo?',
   },
   {
     id: 'compare_peers', kind: 'conversational_parent',
-    title: 'Vs. compañeros', cobertura: 'EXT-2',
-    description: 'Comparación con el promedio del colegio en ticket y % dulce.',
+    title: 'Comparación con compañeros',
+    description: 'Mateo contra el promedio de su colegio en ticket y porcentaje de dulce.',
     whatsapp_text: '¿Mateo come más azúcar que sus compañeros?',
   },
   {
     id: 'balance_projection', kind: 'conversational_parent',
-    title: 'Saldo + proyección', cobertura: 'US-04',
-    description: 'Saldo actual y días estimados antes de agotamiento.',
+    title: 'Saldo y proyección',
+    description: 'Saldo actual del estudiante y días estimados antes de agotamiento.',
     whatsapp_text: '¿cuánto saldo le queda a Mateo?',
   },
   {
     id: 'recharge_recommendations', kind: 'conversational_parent',
-    title: '3 opciones de recarga', cobertura: 'EXT-1',
-    description: 'Anchoring con Esencial / Equilibrada / Bienestar, narrativa data-driven.',
+    title: 'Tres opciones de recarga',
+    description: 'Anchoring con Esencial, Equilibrada y Bienestar — cada una con narrativa basada en el patrón real del estudiante.',
     whatsapp_text: '¿cuánto le recargo?',
   },
   {
     id: 'wompi_checkout', kind: 'conversational_parent',
-    title: 'Confirmar recarga → Wompi', cobertura: 'EXT-1 + Wompi',
-    description: 'El padre elige una opción y el bot envía link de pago Wompi (sandbox).',
+    title: 'Confirmar y pagar con Wompi',
+    description: 'El padre elige una opción y el bot devuelve link de pago Wompi sandbox.',
     whatsapp_text: 'voy con la equilibrada',
     view_path: 'wompi-mock/index.html?plan=equilibrada&monto=150000&estudiante=Mateo&cobertura=mes%20completo',
   },
 
-  // Conversacional · Admin cafetería
+  // Admin
   {
     id: 'school_alerts', kind: 'conversational_admin',
-    title: 'Stock crítico', cobertura: 'US-05',
-    description: 'Lista de productos por debajo del mínimo configurado.',
+    title: 'Stock crítico',
+    description: 'Lista de productos por debajo del mínimo configurado en la cafetería.',
     whatsapp_text: '¿qué tengo en stock crítico hoy?',
   },
   {
     id: 'cafeteria_benchmark', kind: 'conversational_admin',
-    title: 'Benchmark vs otros colegios', cobertura: 'EXT-3',
-    description: 'Comparación con promedio nacional + productos saludables faltantes.',
+    title: 'Benchmark contra otros colegios',
+    description: 'Comparación con el promedio nacional y productos saludables ausentes del menú actual.',
     whatsapp_text: '¿cómo voy vs otros colegios?',
     view_path: 'cafeteria-insights/index.html',
   },
 
-  // Crons event-driven
+  // Crons
   {
     id: 'allergen_polling', kind: 'cron',
-    title: 'Alerta de alérgeno', cobertura: 'US-03',
-    description: 'Cada 60s: detecta ventas nuevas con productos que contienen alérgenos del estudiante. <30s al padre.',
+    title: 'Alerta de alérgeno',
+    description: 'Cada 60 segundos detecta ventas nuevas con productos que contienen alérgenos registrados. El padre se entera en menos de medio minuto.',
   },
   {
     id: 'absence_cron', kind: 'cron',
-    title: 'Alerta de ausencia', cobertura: 'US-02',
-    description: 'Diario 12 PM Bogotá: padres cuyos hijos no compraron hoy reciben aviso.',
+    title: 'Alerta de ausencia',
+    description: 'A las 12 PM Bogotá: padres cuyos hijos aún no han comprado nada reciben un aviso.',
   },
   {
     id: 'stock_cron', kind: 'cron',
-    title: 'Stock crítico diario', cobertura: 'US-05',
-    description: 'Diario 7 AM Bogotá: admin recibe consolidado de productos en stock crítico.',
+    title: 'Stock crítico diario',
+    description: 'A las 7 AM Bogotá la cafetería recibe un consolidado de los productos por debajo del mínimo.',
   },
   {
     id: 'nutrition_weekly', kind: 'cron',
-    title: 'Reporte nutricional semanal', cobertura: 'EXT-2',
-    description: 'Domingos 6 PM Bogotá: padre recibe top productos + macros + comparativa peer + link a vista web.',
+    title: 'Reporte nutricional semanal',
+    description: 'Domingos a las 6 PM. Top productos, macros, comparativa con compañeros y link a vista web detallada.',
     view_path: 'nutrition-report/index.html',
   },
   {
     id: 'cafeteria_weekly', kind: 'cron',
-    title: 'Reporte semanal cafetería + insight cruzado', cobertura: 'EXT-3 + EXT-5',
-    description: 'Lunes 7 AM Bogotá: admin recibe benchmark + señales agregadas de padres (EXT-5) + recomendaciones accionables.',
+    title: 'Reporte semanal con insight cruzado',
+    description: 'Lunes 7 AM. La cafetería recibe benchmark más las señales agregadas que dejaron los padres durante la semana.',
     view_path: 'cafeteria-insights/index.html',
   },
 
-  // Diferenciadores no demostrables como botón
+  // Diferenciadores info-only
   {
     id: 'explainability', kind: 'view_only',
-    title: 'Explicabilidad obligatoria', cobertura: 'EXT-4',
-    description: 'Cada respuesta del bot incluye "te aviso esto porque..." con justificación basada en data. Nunca caja negra.',
+    title: 'Explicabilidad obligatoria',
+    description: 'Cada respuesta del bot incluye "te aviso esto porque..." con justificación basada en datos. Nunca caja negra.',
   },
   {
     id: 'multi_hijo', kind: 'view_only',
-    title: 'Multi-hijo determinístico', cobertura: 'producto real',
-    description: 'El bot maneja padres con varios hijos en el dataset eligiendo al más activo por COUNT(*) + ties por fecha.',
+    title: 'Familias con varios hijos',
+    description: 'Cuando un padre tiene varios estudiantes en el dataset, el bot elige al más activo de forma determinística.',
   },
   {
     id: 'timezone_bogota', kind: 'view_only',
-    title: 'Timezone Bogotá nativo', cobertura: 'producto real',
-    description: 'Todas las queries usan now() AT TIME ZONE America/Bogota — sin confusión con dataset que tiene fechas futuras.',
+    title: 'Zona horaria correcta',
+    description: 'Las queries usan now() en America/Bogotá. Sin confusiones con un dataset que llega hasta fechas futuras.',
   },
 ]
 
@@ -140,6 +160,7 @@ function el(tag, props = {}, children = []) {
     else if (k === 'href') node.href = v
     else if (k === 'target') node.target = v
     else if (k === 'rel') node.rel = v
+    else if (k === 'html') node.innerHTML = v
     else node.setAttribute(k, v)
   }
   for (const c of children) {
@@ -151,8 +172,8 @@ function el(tag, props = {}, children = []) {
 }
 
 async function triggerAws(featureId, statusEl, btn) {
-  statusEl.textContent = '⏳ Enviando…'
-  statusEl.className = 'card-status show'
+  statusEl.textContent = '› Enviando…'
+  statusEl.className = 'feature-status show'
   btn.disabled = true
   try {
     const res = await fetch(TRIGGER_URL, {
@@ -168,31 +189,45 @@ async function triggerAws(featureId, statusEl, btn) {
       const phone = json.details?.phone
       const lambda = json.details?.lambda
       if (phone) {
-        statusEl.textContent = `✅ Webhook firmado y enviado. Mensaje a ${phone}. Revisá WhatsApp en ~5-10s.`
+        statusEl.textContent = `✓ Webhook firmado. Mensaje en camino a ${phone} — revisá WhatsApp en 5-10 segundos.`
       } else if (lambda) {
-        statusEl.textContent = `✅ Cron disparado (${lambda}). Resultado llega vía WhatsApp en ~5-15s.`
+        statusEl.textContent = `✓ Cron disparado (${lambda}). El resultado llega vía WhatsApp en 5-15 segundos.`
       } else {
-        statusEl.textContent = '✅ OK'
+        statusEl.textContent = '✓ OK'
       }
-      statusEl.className = 'card-status show ok'
+      statusEl.className = 'feature-status show ok'
     } else {
-      statusEl.textContent = `❌ Error ${res.status}: ${JSON.stringify(json)}`
-      statusEl.className = 'card-status show err'
+      statusEl.textContent = `✗ Error ${res.status}: ${JSON.stringify(json)}`
+      statusEl.className = 'feature-status show err'
     }
   } catch (e) {
-    statusEl.textContent = `❌ Network: ${e.message}`
-    statusEl.className = 'card-status show err'
+    statusEl.textContent = `✗ Network: ${e.message}`
+    statusEl.className = 'feature-status show err'
   } finally {
-    setTimeout(() => { btn.disabled = false }, 1500)
+    setTimeout(() => { btn.disabled = false }, 1800)
   }
 }
 
-function renderCard(f) {
-  const statusEl = el('div', { className: 'card-status' })
-  const actions = el('div', { className: 'card-actions' })
+const KIND_FEATURE_CLASS = {
+  conversational_parent: 'kind-parent',
+  conversational_admin: 'kind-admin',
+  cron: 'kind-cron',
+  view_only: 'kind-view',
+}
 
-  if (f.kind === 'conversational_parent' || f.kind === 'conversational_admin' || f.kind === 'cron') {
-    const btn = el('button', { className: 'btn btn-aws', type: 'button' }, ['🤖 Disparar real'])
+function renderFeature(f) {
+  const isView = f.kind === 'view_only'
+  const kindClass = KIND_FEATURE_CLASS[f.kind] ?? ''
+  const icon = KIND_ICON[f.kind] ?? '◆'
+
+  const statusEl = el('div', { className: 'feature-status' })
+  const actions = el('div', { className: 'feature-actions' })
+
+  if (!isView) {
+    const btn = el('button', { className: 'btn btn-aws', type: 'button' }, [
+      el('span', { className: 'btn-icon' }, ['▸']),
+      'Disparar',
+    ])
     btn.addEventListener('click', () => triggerAws(f.id, statusEl, btn))
     actions.appendChild(btn)
   }
@@ -200,36 +235,46 @@ function renderCard(f) {
   if (f.whatsapp_text) {
     const wa = `https://wa.me/${SANDBOX_NUMBER}?text=${encodeURIComponent(f.whatsapp_text)}`
     actions.appendChild(
-      el('a', { className: 'btn btn-wa', href: wa, target: '_blank', rel: 'noopener noreferrer' },
-        ['💬 Abrir WhatsApp'])
+      el('a', { className: 'btn btn-wa', href: wa, target: '_blank', rel: 'noopener noreferrer' }, [
+        el('span', { className: 'btn-icon' }, ['✓']),
+        'WhatsApp',
+      ])
     )
   }
 
   if (f.view_path) {
     actions.appendChild(
-      el('a', { className: 'btn btn-view', href: VIEW_BASE + f.view_path, target: '_blank', rel: 'noopener noreferrer' },
-        ['🔗 Ver vista'])
+      el('a', { className: 'btn btn-view', href: VIEW_BASE + f.view_path, target: '_blank', rel: 'noopener noreferrer' }, [
+        el('span', { className: 'btn-icon' }, ['↗']),
+        'Ver vista',
+      ])
     )
   }
 
-  return el('div', { className: f.kind === 'view_only' ? 'card info-card' : 'card' }, [
-    el('div', { className: 'card-head' }, [
-      el('div', { className: 'card-title' }, [f.title]),
-      el('span', { className: 'pill' }, [f.cobertura]),
-    ]),
-    el('div', { className: 'card-desc' }, [f.description]),
-    statusEl,
-    actions,
-  ])
+  const children = [
+    el('span', { className: 'feature-icon' }, [icon]),
+    el('span', { className: 'feature-title' }, [f.title]),
+    el('p', { className: 'feature-desc' }, [f.description]),
+  ]
+  if (actions.children.length > 0) children.push(actions)
+  children.push(statusEl)
+
+  return el('div', { className: `feature ${kindClass}` }, children)
 }
 
 function main() {
+  const counts = { parent: 0, admin: 0, cron: 0, view_only: 0 }
   for (const f of FEATURES) {
     const section = SECTION_MAP[f.kind]
     if (!section) continue
-    const grid = document.querySelector(`[data-section="${section}"]`)
-    if (!grid) continue
-    grid.appendChild(renderCard(f))
+    const container = document.querySelector(`[data-section="${section}"]`)
+    if (!container) continue
+    container.appendChild(renderFeature(f))
+    counts[section]++
+  }
+  for (const [k, n] of Object.entries(counts)) {
+    const chip = document.querySelector(`[data-count-for="${k}"]`)
+    if (chip) chip.textContent = `${n} features`
   }
 }
 
