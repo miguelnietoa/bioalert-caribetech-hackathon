@@ -86,6 +86,16 @@ functions:
       STAGE: ${self:provider.stage}
     events:
       - schedule: cron(0 12 ? * * *)   # 7 AM Colombia
+  balance-cron:
+    handler: lambdas/balance-cron/index.handler
+    timeout: 120
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+      NIT_PILOTO: '900000680'
+      UMBRAL_DIAS: '2'
+    events:
+      - schedule: cron(0 13 ? * * *)   # 8 AM Colombia (un día después de stock-cron, da margen al padre para reaccionar)
   nutrition-weekly:
     handler: lambdas/nutrition-weekly/index.handler
     timeout: 300
