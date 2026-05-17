@@ -90,7 +90,11 @@ Todo está desplegado y se puede tocar en vivo. **No es vaporware** — endpoint
 
 <div align="center">
 
-![Arquitectura BioAlert+](./docs/architecture.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/bioalert-architecture-darkmode.png">
+  <source media="(prefers-color-scheme: light)" srcset="./docs/bioalert-architecture-lightmode.png">
+  <img alt="Arquitectura BioAlert+ (cambia automáticamente entre modo claro y oscuro)" src="./docs/bioalert-architecture-lightmode.png" width="900">
+</picture>
 
 </div>
 
@@ -114,8 +118,7 @@ Servicios externos:
 | 📱 **Kapso** | Proveedor WhatsApp Sandbox (inbound vía webhooks HMAC) |
 | 📤 **Meta Cloud API** | Outbound directo (elimina un salto de latencia) |
 
-> 📐 La fuente del diagrama está en [`docs/architecture.mmd`](./docs/architecture.mmd) (Mermaid).
-> Documento detallado completo: [`docs/architecture.md`](./docs/architecture.md).
+> 📐 Documento detallado completo: [`docs/architecture.md`](./docs/architecture.md).
 
 ---
 
