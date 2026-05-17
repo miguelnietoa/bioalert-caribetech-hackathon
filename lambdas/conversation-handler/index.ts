@@ -20,6 +20,7 @@ import type { ConversationSession } from '../shared/types.js'
 
 import { SYSTEM_PROMPT } from './prompts/system.js'
 import { toolsFor, executeToolCall, TOOL_NAMES } from './tools/index.js'
+import { parseInboundMessages, resolveWebhookEvent } from './kapso-payload.js'
 
 const IDENTITY_SQL = `
 SELECT 'parent' AS kind, identificacion_padre AS id, nombre_padre AS display_name
@@ -71,23 +72,31 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     return { statusCode: 401, body: 'invalid_signature' }
   }
 
-  let payload: { event?: string, data?: { messages?: Array<{ from: string, text: string, timestamp?: string }> } }
+  let payload: Record<string, unknown>
   try {
-    payload = JSON.parse(raw)
+    payload = JSON.parse(raw) as Record<string, unknown>
   } catch {
     return { statusCode: 400, body: 'invalid_json' }
   }
 
-  if (payload.event !== 'whatsapp.message.received') {
+  const eventType = resolveWebhookEvent(event.headers, payload)
+  if (eventType !== 'whatsapp.message.received') {
+    logger.info('webhook_ignored', { event: eventType ?? 'missing' })
     return { statusCode: 200, body: 'ignored_event' }
   }
 
-  const msgs = payload.data?.messages ?? []
-  if (msgs.length === 0) return { statusCode: 200, body: 'no_messages' }
+  const msgs = parseInboundMessages(eventType, payload)
+  if (msgs.length === 0) {
+    logger.info('webhook_no_inbound', {
+      batch: payload.batch === true,
+      has_message: Boolean(payload.message),
+    })
+    return { statusCode: 200, body: 'no_messages' }
+  }
 
   const from = msgs[0]!.from
   // Kapso debouncing concatena varios mensajes en un batch — los unimos en un solo turno.
-  const text = msgs.map(m => m.text).filter(Boolean).join('\n').trim()
+  const text = msgs.map(m => m.text).join('\n').trim()
   if (!text) return { statusCode: 200, body: 'empty_text' }
 
   logger.info('inbound', { from, batch_size: msgs.length, text_len: text.length })
