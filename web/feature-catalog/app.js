@@ -114,6 +114,11 @@ const FEATURES = [
     description: 'A las 7 AM Bogotá la cafetería recibe un consolidado de los productos por debajo del mínimo.',
   },
   {
+    id: 'balance_cron', kind: 'cron',
+    title: 'Aviso de saldo bajo',
+    description: 'A las 8 AM Bogotá detecta a los estudiantes cuyo saldo se acaba en 2 días o menos según su patrón de gasto. El padre recibe el saldo, la proyección y un CTA a las 3 opciones de recarga.',
+  },
+  {
     id: 'nutrition_weekly', kind: 'cron',
     title: 'Reporte nutricional semanal',
     description: 'Domingos a las 6 PM. Top productos, macros, comparativa con compañeros y link a vista web detallada.',
