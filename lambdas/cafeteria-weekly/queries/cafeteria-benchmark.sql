@@ -4,7 +4,7 @@ WITH piloto AS (
   FROM reto.ventas v
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
   WHERE v.nit_colegio = $1
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '7 days'
   GROUP BY category
 ),
 resto AS (
@@ -12,7 +12,7 @@ resto AS (
   FROM reto.ventas v
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
   WHERE v.nit_colegio != $1
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '7 days'
   GROUP BY category
 )
 SELECT

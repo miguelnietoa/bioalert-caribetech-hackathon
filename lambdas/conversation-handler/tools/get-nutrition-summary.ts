@@ -25,7 +25,9 @@ consumo AS (
     pn.sugar_g,
     pn.fat_g,
     pn.sodium_mg,
-    pn.category
+    pn.category,
+    -- Peso/volumen típico de una unidad. Fallback 50g si Claude no estimó (snack medio).
+    COALESCE(pn.gramos_por_unidad, 50) AS gramos
   FROM reto.ventas v
   LEFT JOIN bioalert.product_nutrition pn
     ON pn.nombre_producto = v.nombre_producto
@@ -33,16 +35,16 @@ consumo AS (
     AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - ($2 || ' days')::interval
 )
 SELECT
-  COUNT(*)::int                                                              AS num_compras,
-  COUNT(*) FILTER (WHERE calories_100g IS NULL)::int                         AS productos_sin_nutricion,
-  ROUND(SUM(COALESCE(calories_100g, 0) * cantidad / 100.0))::int             AS total_calories,
-  ROUND(SUM(COALESCE(sugar_g, 0)       * cantidad / 100.0)::numeric, 1)      AS total_sugar_g,
-  ROUND(SUM(COALESCE(fat_g, 0)         * cantidad / 100.0)::numeric, 1)      AS total_fat_g,
-  ROUND(SUM(COALESCE(sodium_mg, 0)     * cantidad / 100.0))::int             AS total_sodium_mg,
+  COUNT(*)::int                                                                              AS num_compras,
+  COUNT(*) FILTER (WHERE calories_100g IS NULL)::int                                         AS productos_sin_nutricion,
+  ROUND(SUM(COALESCE(calories_100g, 0) * cantidad * gramos / 100.0))::int                    AS total_calories,
+  ROUND(SUM(COALESCE(sugar_g, 0)       * cantidad * gramos / 100.0)::numeric, 1)             AS total_sugar_g,
+  ROUND(SUM(COALESCE(fat_g, 0)         * cantidad * gramos / 100.0)::numeric, 1)             AS total_fat_g,
+  ROUND(SUM(COALESCE(sodium_mg, 0)     * cantidad * gramos / 100.0))::int                    AS total_sodium_mg,
   ROUND(
     100.0 * COUNT(*) FILTER (WHERE category IN ('dulce','snack'))
     / NULLIF(COUNT(*), 0)::numeric, 1
-  )                                                                          AS pct_dulce_snack
+  )                                                                                          AS pct_dulce_snack
 FROM consumo
 `
 

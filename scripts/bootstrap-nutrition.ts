@@ -61,6 +61,10 @@ Para cada producto, devuélveme JSON con estos campos:
 - "canonical_name": nombre normalizado (sin tildes, lowercase)
 - "category": una de: "snack", "bebida", "dulce", "fruta", "comida", "lacteo", "otro"
 - "calories_100g", "sugar_g", "fat_g", "protein_g", "sodium_mg": valores estimados por 100g
+- "gramos_por_unidad": peso o volumen típico de UNA unidad (entero o decimal). Crítico para cálculos.
+  Ejemplos: una galleta Chokis = 30, jugo Hit caja 200ml = 200, paleta Jet = 20, gaseosa 350ml = 350,
+  empanada = 80, agua 600ml = 600, bombón = 10, dedito de queso = 25. Si no estás seguro, da una
+  estimación razonable de cuánto pesa o contiene una unidad típica vendida en cafetería escolar.
 
 Productos:
 ${list}
@@ -89,6 +93,7 @@ Responde SOLO con un JSON array.`
     fat_g: number
     protein_g: number
     sodium_mg: number
+    gramos_por_unidad: number
   }>
 
   console.log(`→ Insertando ${parsed.length} filas en bioalert.product_nutrition...`)
@@ -97,17 +102,18 @@ Responde SOLO con un JSON array.`
       `
       INSERT INTO bioalert.product_nutrition
         (nombre_producto, canonical_name, category,
-         calories_100g, sugar_g, fat_g, protein_g, sodium_mg)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         calories_100g, sugar_g, fat_g, protein_g, sodium_mg, gramos_por_unidad)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       ON CONFLICT (nombre_producto) DO UPDATE SET
-        canonical_name = EXCLUDED.canonical_name,
-        category       = EXCLUDED.category,
-        calories_100g  = EXCLUDED.calories_100g,
-        sugar_g        = EXCLUDED.sugar_g,
-        fat_g          = EXCLUDED.fat_g,
-        protein_g      = EXCLUDED.protein_g,
-        sodium_mg      = EXCLUDED.sodium_mg,
-        estimated_at   = now()
+        canonical_name    = EXCLUDED.canonical_name,
+        category          = EXCLUDED.category,
+        calories_100g     = EXCLUDED.calories_100g,
+        sugar_g           = EXCLUDED.sugar_g,
+        fat_g             = EXCLUDED.fat_g,
+        protein_g         = EXCLUDED.protein_g,
+        sodium_mg         = EXCLUDED.sodium_mg,
+        gramos_por_unidad = EXCLUDED.gramos_por_unidad,
+        estimated_at      = now()
     `,
       [
         p.nombre_producto,
@@ -118,6 +124,7 @@ Responde SOLO con un JSON array.`
         p.fat_g,
         p.protein_g,
         p.sodium_mg,
+        p.gramos_por_unidad,
       ],
     )
   }
