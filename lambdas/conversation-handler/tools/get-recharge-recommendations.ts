@@ -6,6 +6,8 @@ import { query } from '../../shared/db.js'
 
 const SQL = `
 WITH yo AS (
+  -- Estudiante "principal" del padre = el con más compras totales (tiebreak: fecha más reciente, id ASC).
+  -- Importante cuando un padre tiene varios hijos en el dataset.
   SELECT
     v.usuario_identificacion,
     MAX(v.nombre_estudiante) AS nombre
@@ -14,7 +16,7 @@ WITH yo AS (
     ON ppm.identificacion_padre = v.identificacion_padre
   WHERE ppm.phone_e164 = $1
   GROUP BY 1
-  ORDER BY MAX(v.fecha) DESC
+  ORDER BY COUNT(*) DESC, MAX(v.fecha) DESC, v.usuario_identificacion ASC
   LIMIT 1
 ),
 spend AS (
@@ -24,9 +26,9 @@ spend AS (
     SUM(v.importe) / NULLIF(COUNT(DISTINCT v.fecha), 0)                     AS gasto_diario_avg,
     COUNT(*) FILTER (WHERE pn.category IN ('dulce','snack'))::numeric * 100
       / NULLIF(COUNT(*), 0)                                                 AS pct_dulce
-  FROM reto.ventas v, yo
+  FROM reto.ventas v
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
-  WHERE v.usuario_identificacion = yo.usuario_identificacion
+  WHERE v.usuario_identificacion = (SELECT usuario_identificacion FROM yo)
     AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
 ),
 balance AS (
