@@ -88,6 +88,7 @@ const FEATURES = [
     title: 'Stock crítico',
     description: 'Lista de productos por debajo del mínimo configurado en la cafetería.',
     whatsapp_text: '¿qué tengo en stock crítico hoy?',
+    view_path: 'cafeteria-insights/index.html',
   },
   {
     id: 'cafeteria_benchmark', kind: 'conversational_admin',
@@ -130,6 +131,11 @@ const FEATURES = [
     description: 'Lunes 7 AM. La cafetería recibe benchmark más las señales agregadas que dejaron los padres durante la semana.',
     view_path: 'cafeteria-insights/index.html',
   },
+  {
+    id: 'streak_detector', kind: 'cron',
+    title: 'Detector de rachas (3+ días)',
+    description: 'Diario 7:30 AM Bogotá. Si un estudiante consume 3+ días la misma categoría, el padre recibe WhatsApp con 3 botones (alertar/restringir/alternativas). Demo: Mateo (0010204385) tiene rachas reales — al disparar, Diana recibe la alerta.',
+  },
 
   // Diferenciadores info-only
   {
@@ -146,6 +152,12 @@ const FEATURES = [
     id: 'timezone_bogota', kind: 'view_only',
     title: 'Zona horaria correcta',
     description: 'Las queries usan now() en America/Bogotá. Sin confusiones con un dataset que llega hasta fechas futuras.',
+  },
+  {
+    id: 'pos_mock', kind: 'view_only',
+    title: 'POS de cafetería con sugerencias del padre',
+    description: 'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias del padre. Casos: Mateo 0010204385 (gaseosa), Antonella 0010204361 (dulces), Valentina 0010130672 (sin restricción).',
+    view_path: 'pos-mock/index.html',
   },
 ]
 
@@ -222,13 +234,16 @@ const KIND_FEATURE_CLASS = {
 
 function renderFeature(f) {
   const isView = f.kind === 'view_only'
+  const isAdminConv = f.kind === 'conversational_admin'
+  const showAwsBtn = !isView && !isAdminConv
+  const showWaBtn = !!f.whatsapp_text && !isAdminConv
   const kindClass = KIND_FEATURE_CLASS[f.kind] ?? ''
   const icon = KIND_ICON[f.kind] ?? '◆'
 
   const statusEl = el('div', { className: 'feature-status' })
   const actions = el('div', { className: 'feature-actions' })
 
-  if (!isView) {
+  if (showAwsBtn) {
     const btn = el('button', { className: 'btn btn-aws', type: 'button' }, [
       el('span', { className: 'btn-icon' }, ['▸']),
       'Disparar',
@@ -237,7 +252,7 @@ function renderFeature(f) {
     actions.appendChild(btn)
   }
 
-  if (f.whatsapp_text) {
+  if (showWaBtn) {
     const wa = `https://wa.me/${SANDBOX_NUMBER}?text=${encodeURIComponent(f.whatsapp_text)}`
     actions.appendChild(
       el('a', { className: 'btn btn-wa', href: wa, target: '_blank', rel: 'noopener noreferrer' }, [
