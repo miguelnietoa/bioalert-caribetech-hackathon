@@ -97,6 +97,15 @@ functions:
       UMBRAL_DIAS: '2'
     events:
       - schedule: cron(0 13 ? * * *)   # 8 AM Colombia (un día después de stock-cron, da margen al padre para reaccionar)
+  streak-detector:
+    handler: lambdas/streak-detector/index.handler
+    timeout: 120
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+      NIT_PILOTO: '900000680'
+    events:
+      - schedule: cron(30 12 ? * * *)   # 7:30 AM Colombia (entre stock-cron 7AM y balance-cron 8AM)
   nutrition-weekly:
     handler: lambdas/nutrition-weekly/index.handler
     timeout: 300
