@@ -1,7 +1,7 @@
 # Pitch outline — BioAlert+ · Caribe Tech Arena 2026
 
 **Target:** 8-10 minutos para presentación + 5 min para preguntas.
-**Audiencia:** Pedro Noguera (CEO Biofood) + jueces técnicos + empresariales.
+**Audiencia:** equipo de Biofood + jueces técnicos + empresariales.
 **Estructura:** 15 slides según plan §14, con narrativa anclada en "Diana y Mateo" del dataset real.
 
 > Cada slide tiene: 🎯 *mensaje clave en 1 frase* + bullets/visual + 🎙️ *lo que dice el speaker* + ⏱️ *tiempo*.
@@ -25,7 +25,7 @@
 
 ## Slide 2 — El problema
 
-🎯 *"Biofood acumula 10 años de data transaccional que no genera valor post-transacción."*
+🎯 *"Biofood acumula millones de transacciones de cafetería que hoy no generan valor post-transacción."*
 
 **Visual (3 columnas):**
 - 👨‍👩‍👧 **Padres ciegos** — no saben qué comió hoy, si compró algo con alérgeno, cuándo se acaba el saldo
@@ -187,7 +187,7 @@ S3+CloudFront vistas estáticas
 - Modelos: Sonnet 4.6 conversacional, Haiku 4.5 batch
 - Costo total de la infra para 24h: **<$1 USD**
 
-🎙️ *"Pedro escribió un PRD muy concreto. Lo respetamos. Las únicas desviaciones son tres y están documentadas: cambiamos Sonnet 4 deprecated por Sonnet 4.6, usamos Kapso sandbox en vez de Meta directo por la aprobación, y Claude estima nutrición en vez de cruzar USDA manualmente."*
+🎙️ *"El PRD del reto era muy concreto y lo respetamos. Las únicas desviaciones son tres y están documentadas: cambiamos Sonnet 4 deprecated por Sonnet 4.6, usamos Kapso sandbox en vez de Meta directo por la aprobación, y Claude estima nutrición en vez de cruzar USDA manualmente."*
 
 ⏱️ 50s
 
@@ -243,7 +243,7 @@ S3+CloudFront vistas estáticas
 
 ## Slide 12 — Por qué Biofood, por qué ahora
 
-🎯 *"10 años de data, esperando a ser activada. La oportunidad no es construir nuevo producto — es despertar el que ya existe."*
+🎯 *"Data transaccional esperando a ser activada. La oportunidad no es construir nuevo producto — es despertar el que ya existe."*
 
 **Visual:**
 - Timeline 2014-2026 con icon de DB acumulando
@@ -321,7 +321,7 @@ S3+CloudFront vistas estáticas
 **Visual:**
 - Logo BioAlert+ en grande
 - Una frase final centrada:
-  > *"BioAlert+ activa los 10 años de data transaccional de Biofood vía un agente WhatsApp que cumple los 3 pilares del reto, construido en el stack que Pedro Noguera definió. Aplicado a los 90 colegios, $1B a $2B COP adicionales en recargas anuales. Sin nuevo CAC, sin tocar Angular, sin onboarding. Listo para mañana."*
+  > *"BioAlert+ activa la data transaccional de las cafeterías de Biofood vía un agente WhatsApp que cumple los 3 pilares del reto, construido exactamente sobre el stack del PRD. Aplicado a los 90 colegios, $1B a $2B COP adicionales en recargas anuales. Sin nuevo CAC, sin tocar Angular, sin onboarding. Listo para mañana."*
 
 🎙️ *"Gracias. Si tienen preguntas técnicas, las contestamos. Si tienen preguntas sobre la oportunidad, también."*
 
@@ -349,7 +349,7 @@ S3+CloudFront vistas estáticas
 - **Energía:** alta en slide 1, sostenida hasta slide 8, factual en 9-10, vendedora en 11, cálida en cierre.
 - **Velocidad:** modular. Si la audiencia engancha en demo, extender 30s.
 - **Q&A esperado:** preguntas técnicas sobre escalabilidad (responder: serverless escala solo), sobre compliance (responder: cero PCI, cero PII nueva, número de WhatsApp = identidad), sobre uplift (responder: modelo conservador, supuestos en `analysis/results/uplift-pitch.md`).
-- **Si Pedro pregunta por qué cambiamos Sonnet 4:** "Su modelo (`claude-sonnet-4-20250514`) se retira oficialmente el 2026-06-15 — un mes después del hackathon. Migramos preventivamente a Sonnet 4.6 al mismo precio, mejor tool calling."
+- **Si preguntan por qué cambiamos Sonnet 4:** "El modelo del PRD (`claude-sonnet-4-20250514`) se retira oficialmente el 2026-06-15 — un mes después del hackathon. Migramos preventivamente a Sonnet 4.6 al mismo precio, mejor tool calling."
 
 ---
 
