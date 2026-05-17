@@ -187,16 +187,12 @@ Centraliza: API key de Claude, API key de Kapso, webhook secret, password del RD
 
 ## 8. Diagramas visuales
 
-En este mismo directorio (`docs/`) están:
+En este mismo directorio (`docs/`):
 
-- **`architecture.png`** (1600×1400, ~120 KB) — diagrama de arquitectura de alto nivel. Muestra la caja "AWS Cloud · Arquitectura Serverless" conteniendo los servicios AWS usados (Lambda, API Gateway, EventBridge, RDS, DynamoDB, S3+CloudFront, SSM), con Kapso (WhatsApp), Claude API y el navegador como elementos externos. Ideal para slides del pitch.
-- **`architecture.svg`** — el mismo diagrama en formato vectorial (sin pérdida al escalar).
-- **`architecture.mmd`** — fuente Mermaid del diagrama. Editable; se renderiza nativo en GitHub.
+- **`bioalert-architecture-lightmode.png`** — diagrama de arquitectura de alto nivel para fondos claros. Muestra la caja `AWS Cloud · us-east-1` conteniendo los servicios usados (API Gateway, EventBridge, CloudFront+S3, SSM, Lambda, RDS, DynamoDB, CloudWatch), con Kapso (WhatsApp), Claude API y el navegador como elementos externos.
+- **`bioalert-architecture-darkmode.png`** — la misma arquitectura en paleta oscura (slate-900 background, accents vibrantes). Ideal para slides con fondo oscuro.
 
-Para regenerar tras cambios al `.mmd`:
-```bash
-npx @mermaid-js/mermaid-cli mmdc -i docs/architecture.mmd -o docs/architecture.png -w 1600 -H 1400
-```
+En el README ambas se exponen vía `<picture>` con `prefers-color-scheme`, así GitHub elige automáticamente la versión correcta según el tema del lector.
 
 ---
 
