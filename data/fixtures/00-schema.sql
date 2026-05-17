@@ -111,4 +111,48 @@ CREATE TABLE IF NOT EXISTS bioalert.product_nutrition (
 CREATE INDEX IF NOT EXISTS product_nutrition_canonical ON bioalert.product_nutrition (canonical_name);
 CREATE INDEX IF NOT EXISTS product_nutrition_category  ON bioalert.product_nutrition (category);
 
+-- Rachas detectadas por streak-detector. Una fila por (estudiante, categoría)
+-- viva. Cuando el padre actúa (alert_only/restricted/dismissed), parent_action
+-- se setea y la racha deja de re-disparar alertas.
+CREATE TABLE IF NOT EXISTS bioalert.streaks (
+  id                      bigserial PRIMARY KEY,
+  usuario_identificacion  text         NOT NULL,
+  nombre_estudiante       text,
+  category                text         NOT NULL,
+  days_in_streak          int          NOT NULL,
+  last_seen_date          date         NOT NULL,
+  detected_at             timestamptz  NOT NULL DEFAULT now(),
+  notified_at             timestamptz,
+  parent_action           text,        -- null | 'alert_only' | 'restricted' | 'dismissed'
+  UNIQUE (usuario_identificacion, category, last_seen_date)
+);
+CREATE INDEX IF NOT EXISTS streaks_pending
+  ON bioalert.streaks (parent_action) WHERE parent_action IS NULL;
+
+-- Restricciones activas que el padre creó. cafeteria_message es el texto
+-- pre-generado que ve el admin/cajero en el POS.
+CREATE TABLE IF NOT EXISTS bioalert.restrictions (
+  id                      bigserial PRIMARY KEY,
+  usuario_identificacion  text         NOT NULL,
+  nombre_estudiante       text,
+  category                text         NOT NULL,
+  type                    text         NOT NULL,  -- 'limit' | 'alert_only'
+  cafeteria_message       text,
+  active                  boolean      NOT NULL DEFAULT true,
+  created_at              timestamptz  NOT NULL DEFAULT now(),
+  expires_at              timestamptz                                  -- null = indefinida
+);
+CREATE INDEX IF NOT EXISTS restrictions_active
+  ON bioalert.restrictions (usuario_identificacion)
+  WHERE active = true;
+
+-- Mapa estático categoría restringida → sustitutos del catálogo Biofood.
+CREATE TABLE IF NOT EXISTS bioalert.category_substitutes (
+  category_restricted     text         NOT NULL,
+  substitute_product      text         NOT NULL,
+  substitute_category     text         NOT NULL,
+  pitch                   text         NOT NULL,
+  PRIMARY KEY (category_restricted, substitute_product)
+);
+
 -- Verificación rápida (con psql: SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('reto', 'bioalert');)
