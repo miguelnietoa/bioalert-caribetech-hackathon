@@ -131,6 +131,48 @@
       border: 1px solid var(--slate-200);
     }
 
+    /* ─── Notice (disclaimer del demo) ──────────────────────── */
+    .notice {
+      background: #fef7e0;
+      border: 1px solid #f7e3a3;
+      border-left: 4px solid #d97706;
+      border-radius: var(--radius);
+      padding: 1.1rem 1.4rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      gap: 0.95rem;
+      align-items: flex-start;
+      opacity: 0;
+      animation: fadeUp 0.5s 0.1s forwards;
+    }
+    .notice-icon {
+      font-size: 1.35rem;
+      line-height: 1;
+      flex-shrink: 0;
+      padding-top: 0.1rem;
+    }
+    .notice-body { flex: 1; }
+    .notice-body strong {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #78350f;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.005em;
+    }
+    .notice-body p {
+      font-size: 0.88rem;
+      color: #7c2d12;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .notice-body p + p { margin-top: 0.5rem; }
+    .notice-fine {
+      font-size: 0.82rem !important;
+      color: #92400e !important;
+      font-style: italic;
+    }
+
     /* ─── Legend ────────────────────────────────────────────── */
     .legend {
       background: white;
@@ -436,7 +478,7 @@
         <span class="dot"></span>
         BioAlert+ · Caribe Tech Arena 2026
       </div>
-      <h1>El agente de WhatsApp que <span>activa</span> los 10 años de data de Biofood.</h1>
+      <h1>El agente de WhatsApp que <span>activa</span> la data transaccional de las cafeterías.</h1>
       <p class="lead">
         Cada feature listada abajo está desplegada en producción demo y se puede probar
         en vivo. Tres modos: disparar la acción real (llega a WhatsApp), abrir el chat con
@@ -449,9 +491,27 @@
       </div>
     </header>
 
+    <div class="notice">
+      <div class="notice-icon">ℹ️</div>
+      <div class="notice-body">
+        <strong>Cómo funciona el demo</strong>
+        <p>
+          El bot solo responde a números registrados como padres en el dataset del piloto.
+          Cuando hagas clic en <strong>Disparar</strong>, la respuesta sale al WhatsApp del
+          padre demo <strong>Diana</strong> — no al tuyo. Si abres <strong>WhatsApp</strong>
+          con el texto pre-escrito y lo envías, llegará al sandbox del bot, pero solo verás
+          una respuesta del agente si tu número está en la base.
+        </p>
+        <p class="notice-fine">
+          Durante el demo en vivo, el equipo proyecta el WhatsApp de Diana en pantalla para que
+          puedas ver cada respuesta del bot en tiempo real.
+        </p>
+      </div>
+    </div>
+
     <div class="legend">
-      <div class="legend-item"><span class="legend-key key-aws">▸</span><span><strong>Disparar.</strong> POST al endpoint demo; el bot responde por WhatsApp en 5-10s.</span></div>
-      <div class="legend-item"><span class="legend-key key-wa">✓</span><span><strong>Abrir WhatsApp.</strong> Atajo wa.me con el texto exacto pre-escrito.</span></div>
+      <div class="legend-item"><span class="legend-key key-aws">▸</span><span><strong>Disparar.</strong> POST al endpoint demo; el bot responde por WhatsApp del padre demo en 5-10 s.</span></div>
+      <div class="legend-item"><span class="legend-key key-wa">✓</span><span><strong>Abrir WhatsApp.</strong> Atajo <code>wa.me</code> con el texto pre-escrito hacia el sandbox del bot.</span></div>
       <div class="legend-item"><span class="legend-key key-view">↗</span><span><strong>Ver vista.</strong> Página estática complementaria.</span></div>
     </div>
 
