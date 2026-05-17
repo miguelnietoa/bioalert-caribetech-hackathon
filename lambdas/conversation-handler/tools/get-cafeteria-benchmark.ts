@@ -10,8 +10,7 @@ SELECT nit_colegio FROM bioalert.cafeteria_admins WHERE phone_e164 = $1 LIMIT 1
 
 const BENCHMARK_SQL = `
 WITH ventana AS (
-  SELECT (MAX(fecha) - INTERVAL '7 days')::date AS desde
-  FROM reto.ventas
+  SELECT ((now() AT TIME ZONE 'America/Bogota')::date - INTERVAL '7 days')::date AS desde
 ),
 mio AS (
   SELECT pn.category, COUNT(*) AS ventas
@@ -37,7 +36,7 @@ ORDER BY ventas_mias DESC NULLS LAST
 `
 
 const FALTANTES_SQL = `
-WITH ventana AS (SELECT (MAX(fecha) - INTERVAL '7 days')::date AS desde FROM reto.ventas)
+WITH ventana AS (SELECT ((now() AT TIME ZONE 'America/Bogota')::date - INTERVAL '7 days')::date AS desde)
 SELECT v2.nombre_producto, COUNT(*) AS veces_en_otros
 FROM reto.ventas v2, ventana w
 LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v2.nombre_producto

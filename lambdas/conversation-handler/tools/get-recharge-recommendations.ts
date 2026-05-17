@@ -27,7 +27,7 @@ spend AS (
   FROM reto.ventas v, yo
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
   WHERE v.usuario_identificacion = yo.usuario_identificacion
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
 ),
 balance AS (
   SELECT

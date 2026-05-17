@@ -11,7 +11,7 @@ WITH last7 AS (
   JOIN bioalert.parent_phone_map ppm
     ON ppm.identificacion_padre = v.identificacion_padre
   WHERE ppm.phone_e164 = $1
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '7 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '7 days'
 )
 SELECT
   (SELECT json_agg(t) FROM (

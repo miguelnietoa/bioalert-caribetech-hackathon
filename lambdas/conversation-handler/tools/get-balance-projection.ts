@@ -33,7 +33,7 @@ patron AS (
     MAX(v.fecha)                                                    AS ultima_compra
   FROM reto.ventas v, yo
   WHERE v.usuario_identificacion = yo.usuario_identificacion
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
 )
 SELECT
   yo.usuario_identificacion,

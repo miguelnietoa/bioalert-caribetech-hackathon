@@ -21,7 +21,7 @@ WITH consumo AS (
   LEFT JOIN bioalert.product_nutrition pn
     ON pn.nombre_producto = v.nombre_producto
   WHERE ppm.phone_e164 = $1
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - ($2 || ' days')::interval
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - ($2 || ' days')::interval
 )
 SELECT
   COUNT(*)::int                                                              AS num_compras,
