@@ -38,6 +38,11 @@ provider:
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/data/*'
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/insights/*'
             - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/nutrition/*'
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            - 'arn:aws:lambda:${aws:region}:${aws:accountId}:function:bioalert-${self:provider.stage}-*'
 
 build:
   esbuild:
@@ -111,6 +116,23 @@ functions:
       - httpApi:
           method: POST
           path: /webhook/kapso
+
+  # Bridge para el feature catalog (web/feature-catalog/).
+  # Dispara webhooks fake al conversation-handler o invoca async crons.
+  demo-trigger:
+    handler: lambdas/demo-trigger/index.handler
+    timeout: 20
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+      CONVERSATION_WEBHOOK_URL: https://c8brdpdf03.execute-api.us-east-1.amazonaws.com/webhook/kapso
+    events:
+      - httpApi:
+          method: POST
+          path: /demo/trigger
+      - httpApi:
+          method: OPTIONS
+          path: /demo/trigger
 
 resources:
   Resources:
