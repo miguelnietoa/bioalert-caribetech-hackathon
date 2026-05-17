@@ -38,12 +38,15 @@ balances AS (
       -
       COALESCE((SELECT SUM(v.importe) FROM reto.ventas v WHERE v.usuario_identificacion = cp.usuario_identificacion), 0)
     )::numeric AS balance_actual,
+    -- Promedio por día hábil sobre últimos 14 días calendario (≈10 hábiles).
+    -- 14d en vez de 7d para que un festivo o puente no degrade la muestra.
     (
       SELECT ROUND(SUM(v.importe) / NULLIF(COUNT(DISTINCT v.fecha), 0))::int
       FROM reto.ventas v
       WHERE v.usuario_identificacion = cp.usuario_identificacion
-        AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '7 days'
-    ) AS gasto_diario_avg_7d
+        AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '14 days'
+        AND EXTRACT(DOW FROM v.fecha) BETWEEN 1 AND 5
+    ) AS gasto_diario_avg_habil
   FROM con_padre cp
 )
 SELECT
@@ -51,20 +54,20 @@ SELECT
   nombre_estudiante,
   phone_e164,
   ROUND(balance_actual)::int AS balance_actual,
-  gasto_diario_avg_7d,
+  gasto_diario_avg_habil,
   CASE
     WHEN balance_actual <= 0 THEN 0
-    ELSE ROUND(balance_actual / gasto_diario_avg_7d)::int
-  END AS dias_restantes
+    ELSE ROUND(balance_actual / gasto_diario_avg_habil)::int
+  END AS dias_habiles_restantes
 FROM balances
-WHERE gasto_diario_avg_7d IS NOT NULL
-  AND gasto_diario_avg_7d > 0
+WHERE gasto_diario_avg_habil IS NOT NULL
+  AND gasto_diario_avg_habil > 0
   AND (
     balance_actual <= 0
-    OR balance_actual / gasto_diario_avg_7d <= $2
+    OR balance_actual / gasto_diario_avg_habil <= $2
   )
 ORDER BY
-  CASE WHEN balance_actual <= 0 THEN -1 ELSE balance_actual / gasto_diario_avg_7d END ASC;
+  CASE WHEN balance_actual <= 0 THEN -1 ELSE balance_actual / gasto_diario_avg_habil END ASC;
 `
 
 const NIT_PILOTO = process.env.NIT_PILOTO ?? '900000680'
@@ -86,17 +89,17 @@ export const handler: ScheduledHandler = async () => {
     nombre_estudiante: string | null
     phone_e164: string
     balance_actual: number
-    gasto_diario_avg_7d: number
-    dias_restantes: number
+    gasto_diario_avg_habil: number
+    dias_habiles_restantes: number
   }>(SQL, [NIT_PILOTO, UMBRAL_DIAS])
 
-  logger.info('low balance check', { hits: hits.length, umbral_dias: UMBRAL_DIAS })
+  logger.info('low balance check', { hits: hits.length, umbral_dias_habiles: UMBRAL_DIAS })
 
   for (const h of hits) {
     const nombre = h.nombre_estudiante ?? 'tu hijo'
-    const dias = Number(h.dias_restantes)
+    const dias = Number(h.dias_habiles_restantes)
     const saldo = Number(h.balance_actual)
-    const gastoDia = Number(h.gasto_diario_avg_7d)
+    const gastoDia = Number(h.gasto_diario_avg_habil)
 
     const sobregiro = saldo < 0
     const saldoTxt = sobregiro
@@ -106,14 +109,14 @@ export const handler: ScheduledHandler = async () => {
       ? 'ya está consumiendo por encima del saldo recargado'
       : dias <= 0
         ? 'el saldo ya está prácticamente agotado'
-        : `el saldo le alcanza para ${dias} ${plural(dias, 'día', 'días')} más`
+        : `el saldo le alcanza para ${dias} ${plural(dias, 'día hábil', 'días hábiles')} más de cafetería`
 
     const body =
       `💳 Saldo bajo en la cafetería\n\n` +
       `*${nombre}* ${cuandoSeAcaba}.\n\n` +
       `• Saldo actual: *${saldoTxt}*\n` +
-      `• Gasto promedio: ${fmtCOP.format(gastoDia)}/día\n\n` +
-      `Te aviso esto porque su patrón de los últimos 7 días así lo proyecta.\n\n` +
+      `• Gasto promedio: ${fmtCOP.format(gastoDia)} por día de clase\n\n` +
+      `Te aviso esto porque su patrón de las últimas dos semanas escolares así lo proyecta.\n\n` +
       `¿Quieres ver 3 opciones de recarga? Responde *"opciones"* y te las paso.`
 
     try {
