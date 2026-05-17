@@ -46,26 +46,29 @@ Construido en 24h para el hackathon **Caribe Tech Arena 2026** (premio $2M COP).
 Todo corre dentro de una cuenta AWS Free Tier dedicada. Cero servidores administrados, cero containers.
 
 ### 3.1. Compute · AWS Lambda
-**9 funciones**, todas Node.js 20 + TypeScript, empaquetadas con esbuild:
+**11 funciones**, todas Node.js 20 + TypeScript, empaquetadas con esbuild:
 
 **Síncronas (HTTP-triggered):**
 - `conversation-handler` — corazón del bot. Recibe webhook de Kapso, llama a Claude Sonnet 4.6 con 9 tools registradas, queryea Postgres, mantiene contexto en DynamoDB, responde por WhatsApp.
 - `cafeteria-insights-api` — sirve el dashboard React. 8 queries SQL en paralelo (orders, summary, benchmark, discontinue, launch, parent insights, critical stock).
 - `demo-trigger` — bridge para el feature catalog: firma webhooks fake hacia conversation-handler o invoca async otras Lambdas para que el jurado dispare features desde el browser.
+- `pos-api` — sirve `GET /pos/student/{id}/flags` al POS mock. Devuelve nombre, saldo y sugerencias sutiles activas del padre con sus sustitutos.
 
 **Programadas (EventBridge cron):**
 - `allergen-polling` (cada 60s) — detecta ventas con alérgenos del estudiante y notifica al padre en <30s.
 - `absence-cron` (12 PM Bogotá) — padres cuyo hijo no compró hoy reciben aviso.
 - `stock-cron` (7 AM Bogotá) — admin recibe lista de productos en stock crítico.
 - `balance-cron` (8 AM Bogotá) — padres cuyo hijo se queda sin saldo en ≤2 días reciben alerta + CTA de recarga.
+- `streak-detector` (7:30 AM Bogotá) — detecta categorías que el estudiante repite 3+ días en últimos 5 días hábiles y envía WhatsApp interactivo al padre con 3 botones (alertar/restringir/alternativas).
 - `nutrition-weekly` (Domingo 6 PM) — reporte nutricional del estudiante con top productos, macros, comparación con compañeros.
 - `cafeteria-weekly` (Lunes 7 AM) — reporte semanal a la cafetería con benchmark nacional + señales agregadas de padres.
 
 ### 3.2. API · Amazon API Gateway (HTTP API)
-**3 rutas públicas**:
+**4 rutas públicas**:
 - `POST /webhook/kapso` → conversation-handler (Kapso firma con HMAC-SHA256).
 - `POST /demo/trigger` → demo-trigger (protegido con token simple en header).
 - `GET /cafeteria-insights` → cafeteria-insights-api (público, CORS abierto).
+- `GET /pos/student/{studentId}/flags` → pos-api (público, CORS abierto).
 
 Endpoint actual: `https://c8brdpdf03.execute-api.us-east-1.amazonaws.com`.
 
@@ -84,6 +87,9 @@ Instancia `db.t4g.micro` (ARM, 1 vCPU, 1 GB RAM). Schemas:
 - `inventory` — stock actual y mínimo por producto/colegio.
 - `cafeteria_admins` — teléfonos de admins por colegio.
 - `benchmark_nacional_cache` — materialización del benchmark nacional para evitar 30s de scan en cada request.
+- `streaks` — rachas detectadas pendientes de acción del padre.
+- `restrictions` — restricciones activas creadas por el padre, con cafeteria_message hardcoded.
+- `category_substitutes` — mapa estático: categoría restringida → productos sustitutos vendibles del catálogo Biofood.
 
 ### 3.4. Estado · Amazon DynamoDB
 - Tabla `bioalert-conversations-hackathon` (PK: `phone_e164`, TTL 1h).
@@ -158,6 +164,19 @@ Centraliza: API key de Claude, API key de Kapso, webhook secret, password del RD
    - `critical_stock` (productos bajo mínimo)
 4. Devuelve un JSON con shape `CafeteriaInsightsPayload`.
 5. React renderiza con Tailwind.
+
+### Flujo E · Rachas, restricciones y POS (padre → cafetería)
+
+1. *Cron streak-detector 7:30 AM Bogotá*: para cada estudiante del piloto, detecta categorías con 3+ días distintos en los últimos 5 días hábiles.
+2. Si encuentra una racha nueva → inserta en `bioalert.streaks` + WhatsApp **interactivo** al padre con 3 botones (Solo alertar / Restringir / Alternativas).
+3. Padre toca un botón (o responde por texto): el `conversation-handler` procesa con las tools `acknowledge_streak`, `activate_restriction`, `get_substitutes`.
+4. Si crea restricción → fila en `bioalert.restrictions` con `cafeteria_message` hardcoded por categoría (tono sutil, no punitivo). La restricción tiene vigencia: 1 semana, 1 mes o indefinida.
+5. *Cafetería*: el cajero abre la página POS mock, ingresa el código del estudiante → `GET /pos/student/{id}/flags` → la página muestra saldo + tarjeta verde-acento con la sugerencia del padre + sustitutos vendibles concretos.
+6. Tagline operativa: *"No bloqueamos ventas. Redirigimos demanda."*
+
+URLs vivas:
+- POS mock: <https://bioalert-web-hackathon-642722971137.s3.us-east-1.amazonaws.com/pos-mock/index.html>
+- Casos demo: Mateo `0010204385` (bebida), Antonella `0010204361` (dulce), Valentina `0010130672` (control sin restricción).
 
 ---
 
