@@ -99,6 +99,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const text = msgs.map(m => m.text).join('\n').trim()
   if (!text) return { statusCode: 200, body: 'empty_text' }
 
+  const t0 = Date.now()
   logger.info('inbound', { from, batch_size: msgs.length, text_len: text.length })
 
   const identity = await resolveIdentity(from)
@@ -192,6 +193,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   }
 
   await putSession(session)
+
+  logger.info('inbound_done', {
+    from,
+    duration_ms: Date.now() - t0,
+    turns: session.history.length,
+  })
 
   return { statusCode: 200, body: 'ok' }
 }
