@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { getSecret } from './ssm.js'
 import type { WhatsAppButton } from './types.js'
+import { formatForWhatsApp } from './whatsapp-format.js'
 
 const KAPSO_META = 'https://api.kapso.ai/meta/whatsapp/v24.0'
 
@@ -44,7 +45,7 @@ export async function sendText(to: string, body: string): Promise<void> {
   await sendMessage({
     to: normalizeTo(to),
     type: 'text',
-    text: { body },
+    text: { body: formatForWhatsApp(body) },
   })
 }
 
@@ -58,7 +59,7 @@ export async function sendButtons(
     type: 'interactive',
     interactive: {
       type: 'button',
-      body: { text: body },
+      body: { text: formatForWhatsApp(body) },
       action: {
         buttons: buttons.slice(0, 3).map((b) => ({
           type: 'reply',
