@@ -34,7 +34,10 @@ provider:
         - Effect: Allow
           Action:
             - s3:PutObject
-          Resource: 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/data/*'
+          Resource:
+            - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/data/*'
+            - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/insights/*'
+            - 'arn:aws:s3:::bioalert-web-${self:provider.stage}-${aws:accountId}/nutrition/*'
 
 build:
   esbuild:
