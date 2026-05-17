@@ -97,6 +97,12 @@ const FEATURES = [
     whatsapp_text: '¿cómo voy vs otros colegios?',
     view_path: 'cafeteria-insights/index.html',
   },
+  {
+    id: 'pos_mock', kind: 'conversational_admin',
+    title: 'POS con sugerencias del padre',
+    description: 'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias del padre. Casos: Mateo 0010204385 (gaseosa), Antonella 0010204361 (dulces), Valentina 0010130672 (sin restricción).',
+    view_path: 'pos-mock/index.html',
+  },
 
   // Crons
   {
@@ -152,12 +158,6 @@ const FEATURES = [
     id: 'timezone_bogota', kind: 'view_only',
     title: 'Zona horaria correcta',
     description: 'Las queries usan now() en America/Bogotá. Sin confusiones con un dataset que llega hasta fechas futuras.',
-  },
-  {
-    id: 'pos_mock', kind: 'view_only',
-    title: 'POS de cafetería con sugerencias del padre',
-    description: 'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias del padre. Casos: Mateo 0010204385 (gaseosa), Antonella 0010204361 (dulces), Valentina 0010130672 (sin restricción).',
-    view_path: 'pos-mock/index.html',
   },
 ]
 

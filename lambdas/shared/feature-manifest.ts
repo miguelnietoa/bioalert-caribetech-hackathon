@@ -109,6 +109,17 @@ export const FEATURES: FeatureSpec[] = [
     as_phone: DEFAULT_ADMIN_PHONE,
     view_path: 'cafeteria-insights/index.html',
   },
+  {
+    id: 'pos_mock',
+    kind: 'conversational_admin',
+    title: 'POS con sugerencias del padre',
+    description:
+      'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias ' +
+      'sutiles que el padre activó. Casos demo: Mateo 0010204385 (gaseosa restringida), ' +
+      'Antonella 0010204361 (dulces restringidos), Valentina 0010130672 (sin restricción — caso control).',
+    cobertura: 'EXT-7 (rachas)',
+    view_path: 'pos-mock/index.html',
+  },
 
   // ── Crons (event-driven) ──
   {
@@ -194,17 +205,6 @@ export const FEATURES: FeatureSpec[] = [
     title: 'Timezone Bogotá nativo',
     description: 'Todas las queries usan now() AT TIME ZONE America/Bogota — sin confusión con dataset que tiene fechas futuras.',
     cobertura: 'producto real',
-  },
-  {
-    id: 'pos_mock',
-    kind: 'view_only',
-    title: 'POS de cafetería con sugerencias del padre',
-    description:
-      'Simulación del POS de Biofood. Ingresa un código estudiantil para ver saldo + sugerencias ' +
-      'sutiles que el padre activó. Casos demo: Mateo 0010204385 (gaseosa restringida), ' +
-      'Antonella 0010204361 (dulces restringidos), Valentina 0010130672 (sin restricción — caso control).',
-    cobertura: 'EXT-7 (rachas)',
-    view_path: 'pos-mock/index.html',
   },
 ]
 
