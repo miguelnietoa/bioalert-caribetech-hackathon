@@ -135,6 +135,14 @@ export const FEATURES: FeatureSpec[] = [
     lambda_function: 'bioalert-hackathon-stock-cron',
   },
   {
+    id: 'balance_cron',
+    kind: 'cron',
+    title: 'Aviso de saldo bajo',
+    description: 'Diario 8 AM Bogotá: padres cuyo hijo se queda sin saldo en ≤2 días reciben alerta con saldo + proyección + CTA a las 3 opciones de recarga.',
+    cobertura: 'US-04 proactivo + EXT-1',
+    lambda_function: 'bioalert-hackathon-balance-cron',
+  },
+  {
     id: 'nutrition_weekly',
     kind: 'cron',
     title: 'Reporte nutricional semanal',
