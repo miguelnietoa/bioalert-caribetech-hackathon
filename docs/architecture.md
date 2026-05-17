@@ -208,8 +208,8 @@ URLs vivas:
 
 En este mismo directorio (`docs/`):
 
-- **`bioalert-architecture-lightmode.png`** — diagrama de arquitectura de alto nivel para fondos claros. Muestra la caja `AWS Cloud · us-east-1` conteniendo los servicios usados (API Gateway, EventBridge, CloudFront+S3, SSM, Lambda, RDS, DynamoDB, CloudWatch), con Kapso (WhatsApp), Claude API y el navegador como elementos externos.
-- **`bioalert-architecture-darkmode.png`** — la misma arquitectura en paleta oscura (slate-900 background, accents vibrantes). Ideal para slides con fondo oscuro.
+- **`bioalert-arch-light.png`** — diagrama de arquitectura de alto nivel para fondos claros. Muestra la caja `AWS Cloud · us-east-1` conteniendo los servicios usados (API Gateway, EventBridge, CloudFront+S3, SSM, Lambda, RDS, DynamoDB, CloudWatch), con Kapso (WhatsApp), Claude API y el navegador como elementos externos.
+- **`bioalert-arch-dark.png`** — la misma arquitectura en paleta oscura (slate-900 background, accents vibrantes). Ideal para slides con fondo oscuro.
 
 En el README ambas se exponen vía `<picture>` con `prefers-color-scheme`, así GitHub elige automáticamente la versión correcta según el tema del lector.
 

@@ -92,9 +92,9 @@ Todo está desplegado y se puede tocar en vivo. **No es vaporware** — endpoint
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/bioalert-architecture-darkmode.png">
-  <source media="(prefers-color-scheme: light)" srcset="./docs/bioalert-architecture-lightmode.png">
-  <img alt="Arquitectura BioAlert+ (cambia automáticamente entre modo claro y oscuro)" src="./docs/bioalert-architecture-lightmode.png" width="900">
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/bioalert-arch-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./docs/bioalert-arch-light.png">
+  <img alt="Arquitectura BioAlert+ (cambia automáticamente entre modo claro y oscuro)" src="./docs/bioalert-arch-light.png" width="900">
 </picture>
 
 </div>
