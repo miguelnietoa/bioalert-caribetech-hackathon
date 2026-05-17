@@ -12,14 +12,14 @@ import type { APIGatewayProxyHandlerV2 } from 'aws-lambda'
 import type Anthropic from '@anthropic-ai/sdk'
 
 import { chatWithTools, MODEL_CONVERSATIONAL } from '../shared/claude.js'
-import { sendText, sendButtons, verifyWebhookSignature } from '../shared/whatsapp.js'
+import { sendText, verifyWebhookSignature } from '../shared/whatsapp.js'
 import { getSession, putSession } from '../shared/dynamo-conversations.js'
 import { query } from '../shared/db.js'
 import { logger } from '../shared/logger.js'
 import type { ConversationSession } from '../shared/types.js'
 
 import { SYSTEM_PROMPT } from './prompts/system.js'
-import { toolsFor, executeToolCall, TOOL_NAMES } from './tools/index.js'
+import { toolsFor, executeToolCall } from './tools/index.js'
 import { parseInboundMessages, resolveWebhookEvent } from './kapso-payload.js'
 
 const IDENTITY_SQL = `
@@ -56,11 +56,6 @@ function extractText(content: Anthropic.Message['content']): string {
     .map(b => b.text)
     .join('\n\n')
   return text.trim() || '(sin respuesta)'
-}
-
-function lastUsedTool(content: Anthropic.Message['content']): string | null {
-  const tu = content.find(b => b.type === 'tool_use')
-  return tu && tu.type === 'tool_use' ? tu.name : null
 }
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -176,21 +171,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const reply = extractText(lastResponse.content)
   session.history.push({ role: 'assistant', content: reply })
 
-  // Enviar respuesta principal por WhatsApp
+  // Enviar respuesta principal por WhatsApp.
+  // El link de pago Wompi (cuando aplica) viene embebido en `reply` porque
+  // Claude lo obtiene desde la tool generate_payment_link y lo incluye en
+  // su mensaje natural (WhatsApp lo renderiza como preview clicable).
   await sendText(from, reply)
-
-  // EXT-6: emitir buttons si la última tool fue get_recharge_recommendations
-  if (lastUsedTool(lastResponse.content) === TOOL_NAMES.rechargeRecommendations) {
-    try {
-      await sendButtons(from, '¿Cuál preferís?', [
-        { id: 'recharge_esencial',    title: 'Esencial' },
-        { id: 'recharge_equilibrada', title: 'Equilibrada' },
-        { id: 'recharge_bienestar',   title: 'Bienestar' },
-      ])
-    } catch (e: unknown) {
-      logger.warn('quick_replies_failed', { error: e instanceof Error ? e.message : String(e) })
-    }
-  }
 
   await putSession(session)
 

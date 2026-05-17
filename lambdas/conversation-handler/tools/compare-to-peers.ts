@@ -6,6 +6,7 @@ import { query } from '../../shared/db.js'
 
 const SQL = `
 WITH yo AS (
+  -- Estudiante "principal" del padre = el con más compras totales.
   SELECT
     v.usuario_identificacion,
     v.nit_colegio,
@@ -15,7 +16,7 @@ WITH yo AS (
     ON ppm.identificacion_padre = v.identificacion_padre
   WHERE ppm.phone_e164 = $1
   GROUP BY 1, 2
-  ORDER BY MAX(v.fecha) DESC
+  ORDER BY COUNT(*) DESC, MAX(v.fecha) DESC, v.usuario_identificacion ASC
   LIMIT 1
 ),
 mis_stats AS (
@@ -27,10 +28,10 @@ mis_stats AS (
       100.0 * COUNT(*) FILTER (WHERE pn.category IN ('dulce','snack'))
       / NULLIF(COUNT(*), 0)::numeric, 1
     )                                                                 AS pct_dulce
-  FROM reto.ventas v, yo
+  FROM reto.ventas v
   LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
-  WHERE v.usuario_identificacion = yo.usuario_identificacion
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days'
+  WHERE v.usuario_identificacion = (SELECT usuario_identificacion FROM yo)
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
 ),
 peers_stats AS (
   SELECT
@@ -46,11 +47,11 @@ peers_stats AS (
       AVG(v.importe)                                                  AS ticket,
       100.0 * COUNT(*) FILTER (WHERE pn.category IN ('dulce','snack'))
         / NULLIF(COUNT(*), 0)                                         AS pct_dulce
-    FROM reto.ventas v, yo
+    FROM reto.ventas v
     LEFT JOIN bioalert.product_nutrition pn ON pn.nombre_producto = v.nombre_producto
-    WHERE v.nit_colegio = yo.nit_colegio
-      AND v.usuario_identificacion <> yo.usuario_identificacion
-      AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days'
+    WHERE v.nit_colegio = (SELECT nit_colegio FROM yo)
+      AND v.usuario_identificacion <> (SELECT usuario_identificacion FROM yo)
+      AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
     GROUP BY 1
   ) s
 )

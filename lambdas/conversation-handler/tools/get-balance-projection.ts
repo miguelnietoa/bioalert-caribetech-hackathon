@@ -7,13 +7,14 @@ import { query } from '../../shared/db.js'
 
 const SQL = `
 WITH yo AS (
+  -- Estudiante "principal" del padre = el con más compras totales.
   SELECT v.usuario_identificacion
   FROM reto.ventas v
   JOIN bioalert.parent_phone_map ppm
     ON ppm.identificacion_padre = v.identificacion_padre
   WHERE ppm.phone_e164 = $1
   GROUP BY 1
-  ORDER BY MAX(v.fecha) DESC
+  ORDER BY COUNT(*) DESC, MAX(v.fecha) DESC, v.usuario_identificacion ASC
   LIMIT 1
 ),
 recargas AS (
@@ -33,7 +34,7 @@ patron AS (
     MAX(v.fecha)                                                    AS ultima_compra
   FROM reto.ventas v, yo
   WHERE v.usuario_identificacion = yo.usuario_identificacion
-    AND v.fecha >= (SELECT MAX(fecha) FROM reto.ventas) - INTERVAL '30 days'
+    AND v.fecha >= ((now() AT TIME ZONE 'America/Bogota')::date) - INTERVAL '30 days'
 )
 SELECT
   yo.usuario_identificacion,
