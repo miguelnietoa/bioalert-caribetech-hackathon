@@ -171,6 +171,20 @@ functions:
           method: OPTIONS
           path: /cafeteria-insights
 
+  pos-api:
+    handler: lambdas/pos-api/index.handler
+    timeout: 10
+    memorySize: 512
+    environment:
+      STAGE: ${self:provider.stage}
+    events:
+      - httpApi:
+          method: GET
+          path: /pos/student/{studentId}/flags
+      - httpApi:
+          method: OPTIONS
+          path: /pos/student/{studentId}/flags
+
 resources:
   Resources:
 
