@@ -17,6 +17,10 @@ export interface FeatureSpec {
   as_phone?: string
   // Para crons: el FunctionName completo en AWS
   lambda_function?: string
+  // Para crons: payload custom que demo-trigger pasa al InvokeCommand.
+  // Útil para acotar el demo (e.g. limit:1 + onlyPhone para no inundar)
+  // sin tocar la Lambda. Si se omite, se invoca con payload vacío.
+  lambda_payload?: Record<string, unknown>
   // Para vistas (link directo): ruta relativa al S3 bucket
   view_path?: string
 }
@@ -179,9 +183,15 @@ export const FEATURES: FeatureSpec[] = [
     description:
       'Diario 7:30 AM Bogotá. Si un estudiante consume 3+ días la misma categoría (dulce, snack, bebida...) ' +
       'el padre recibe WhatsApp con 3 botones: solo alertar / restringir / ver alternativas. ' +
-      'Demo: Mateo (0010204385) tiene rachas reales de dulce y snack — al disparar, Diana recibe la alerta.',
+      'Demo: dispara la racha real de Mateo (0010204385, dulce) — Diana recibe UN solo mensaje, ' +
+      'para que el pitch sea limpio. El cron diario sigue escaneando a todo el piloto sin filtro.',
     cobertura: 'EXT-7 (rachas)',
     lambda_function: 'bioalert-hackathon-streak-detector',
+    lambda_payload: {
+      onlyPhone: '+573046002689',
+      onlyCategory: 'dulce',
+      limit: 1,
+    },
   },
 
   // ── Diferenciadores no demostrables como botón pero importantes ──

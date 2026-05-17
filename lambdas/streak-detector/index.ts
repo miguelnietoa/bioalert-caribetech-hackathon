@@ -83,19 +83,25 @@ interface DetectorRow {
 
 interface InvokeEvent {
   dryRun?: boolean
-  onlyPhone?: string
+  onlyPhone?: string       // limita a un padre específico (e.g. demo)
+  onlyCategory?: string    // limita a 1 categoría (e.g. 'dulce' para el caso Diana/Mateo)
+  limit?: number           // limita la cantidad de mensajes (e.g. 1 mensaje para el demo)
 }
 
 export const handler: ScheduledHandler = async (event: any) => {
   const evt = (event ?? {}) as InvokeEvent
   const dryRun = !!evt.dryRun
   const onlyPhone = evt.onlyPhone
+  const onlyCategory = evt.onlyCategory
+  const maxHits = typeof evt.limit === 'number' && evt.limit > 0 ? evt.limit : undefined
 
   let rows = await query<DetectorRow>(DETECT_SQL, [NIT_PILOTO])
 
   if (onlyPhone) rows = rows.filter(r => r.phone_e164 === onlyPhone)
+  if (onlyCategory) rows = rows.filter(r => r.category === onlyCategory)
+  if (maxHits !== undefined) rows = rows.slice(0, maxHits)
 
-  logger.info('streak detector', { hits: rows.length, dryRun })
+  logger.info('streak detector', { hits: rows.length, dryRun, onlyPhone, onlyCategory, limit: maxHits })
 
   for (const r of rows) {
     try {

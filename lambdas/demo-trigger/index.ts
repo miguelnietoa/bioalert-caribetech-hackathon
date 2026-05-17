@@ -88,10 +88,14 @@ async function dispatchCron(
   if (!feature.lambda_function) {
     return { status: 400, details: { error: 'feature has no lambda_function' } }
   }
+  // Si el feature define un lambda_payload (e.g. filtros para demo),
+  // se pasa tal cual. Si no, se invoca con payload vacío y la Lambda
+  // corre con sus defaults (como lo haría el cron real).
+  const payload = feature.lambda_payload ?? {}
   const cmd = new InvokeCommand({
     FunctionName: feature.lambda_function,
     InvocationType: 'Event', // async — no esperamos respuesta
-    Payload: Buffer.from(JSON.stringify({})),
+    Payload: Buffer.from(JSON.stringify(payload)),
   })
   await lambdaClient.send(cmd)
   return {
