@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@13/marked.min.js"></script>
   <style>
     :root {
       --bio-primary:      #2b6cb0;
@@ -162,9 +163,55 @@
     .narrative {
       font-size: 0.95rem;
       color: var(--slate-700);
-      line-height: 1.6;
-      white-space: pre-wrap;
+      line-height: 1.65;
     }
+    .narrative > *:first-child { margin-top: 0; }
+    .narrative > *:last-child { margin-bottom: 0; }
+    .narrative p {
+      margin: 0 0 0.7rem 0;
+    }
+    .narrative p:last-child { margin-bottom: 0; }
+    .narrative h1, .narrative h2, .narrative h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      color: var(--slate-900);
+      margin: 0.85rem 0 0.45rem 0;
+      line-height: 1.3;
+    }
+    .narrative strong { font-weight: 600; color: var(--slate-900); }
+    .narrative em { font-style: italic; color: var(--slate-700); }
+    .narrative ul, .narrative ol {
+      margin: 0.4rem 0 0.7rem 1.3rem;
+      padding: 0;
+    }
+    .narrative li {
+      margin-bottom: 0.25rem;
+      line-height: 1.55;
+    }
+    .narrative code {
+      background: var(--slate-100);
+      padding: 0.08rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.88em;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--slate-800);
+    }
+    .narrative blockquote {
+      margin: 0.5rem 0;
+      padding: 0.55rem 0.9rem;
+      border-left: 3px solid var(--bio-accent);
+      background: #f0fdfb;
+      color: var(--slate-700);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-style: italic;
+    }
+    .narrative a {
+      color: var(--bio-primary);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+    }
+    .narrative a:hover { color: var(--bio-primary-dark); }
     .flag-card {
       background: var(--amber-bg);
       border: 1px solid #f7e3a3;
@@ -336,11 +383,16 @@
         </div>
       ` : ''
 
-      // Narrativa LLM
-      const narrCard = d.narrative ? `
+      // Narrativa LLM (markdown → HTML con marked)
+      let narrHtml = ''
+      if (d.narrative) {
+        marked.setOptions({ breaks: true, gfm: true })
+        narrHtml = marked.parse(d.narrative)
+      }
+      const narrCard = narrHtml ? `
         <div class="card">
           <h2>Resumen del asistente nutricional</h2>
-          <div class="narrative">${d.narrative.replace(/</g, '&lt;')}</div>
+          <div class="narrative">${narrHtml}</div>
         </div>
       ` : ''
 

@@ -192,9 +192,11 @@ export const handler: ScheduledHandler = async (event: any) => {
 
       const narrative = await chatWithTools({
         systemPrompt:
-          'Eres un asistente nutricional escolar. Escribe en español neutro (NO uses voseo argentino: ' +
-          '"tienes" no "tenés", "ves" no "vés"). Máximo 3 líneas. Tono cálido pero directo, ' +
-          'orientado a acción. Si hay banderas, mencionalas brevemente.',
+          'Eres un asistente nutricional escolar. Devuelve SOLO el cuerpo del mensaje ' +
+          'al padre (sin título, sin saludo, sin headings de markdown como "# ..."). ' +
+          'Máximo 3 oraciones. Español neutro (usa "tienes" no "tenés"). Tono cálido pero ' +
+          'directo, orientado a acción. Si hay banderas, mencionalas brevemente. ' +
+          'Puedes usar **negrita** para resaltar UN dato clave si ayuda — nada más.',
         messages: [{ role: 'user', content: narrativePrompt }],
         tools: [],
         model: MODEL_BATCH,
